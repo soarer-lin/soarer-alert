@@ -68,6 +68,7 @@ uploads/
 .tmp/
 *.tmp
 *.pid
+backups/
 
 ### docker
 /volumes

@@ -277,13 +277,13 @@ CPU、内存、磁盘的 Linux 与 Windows 告警规则位于 `docker/prometheus
 备份 PostgreSQL：
 
 ```powershell
-docker compose exec -T postgres pg_dump -U superbiz -d superbiz_agent -F c > soarer-alert.dump
+docker compose exec -T postgres pg_dump -U superbiz -d soarer_alert -F c > soarer-alert.dump
 ```
 
 恢复 PostgreSQL：
 
 ```powershell
-Get-Content soarer-alert.dump -AsByteStream -Raw | docker compose exec -T postgres pg_restore -U superbiz -d superbiz_agent --clean --if-exists
+Get-Content soarer-alert.dump -AsByteStream -Raw | docker compose exec -T postgres pg_restore -U superbiz -d soarer_alert --clean --if-exists
 ```
 
 RustFS 原始文件保存在 `soarer-alert-rustfs-data` 卷。生产环境建议把该卷挂载到企业对象存储或纳入主机级备份；PostgreSQL 备份不会包含原始文件，只包含对象 key 和向量元数据。
