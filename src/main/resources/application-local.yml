@@ -51,7 +51,7 @@ app:
     endpoint: ${RUSTFS_ENDPOINT:http://localhost:19000}
     access-key: ${RUSTFS_ACCESS_KEY:rustfsadmin}
     secret-key: ${RUSTFS_SECRET_KEY:rustfsadmin}
-    bucket: ${RUSTFS_BUCKET:superbiz-agent}
+    bucket: ${RUSTFS_BUCKET:soarer-alert}
     region: ${RUSTFS_REGION:us-east-1}
     api-call-timeout: ${RUSTFS_API_CALL_TIMEOUT:60s}
     api-call-attempt-timeout: ${RUSTFS_API_CALL_ATTEMPT_TIMEOUT:20s}

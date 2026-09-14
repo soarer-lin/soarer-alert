@@ -177,7 +177,7 @@ export DASHSCOPE_CHAT_COMPLETIONS_PATH=/chat/completions
 export DASHSCOPE_CHAT_ENABLE_THINKING=false
 export DASHSCOPE_EMBEDDING_MODEL=text-embedding-v3
 export RUSTFS_ENDPOINT=http://localhost:19000
-export RUSTFS_BUCKET=superbiz-agent
+export RUSTFS_BUCKET=soarer-alert
 ```
 
 本地默认 RustFS 凭据为 `rustfsadmin / rustfsadmin`，生产环境应通过环境变量注入

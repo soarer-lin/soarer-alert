@@ -35,7 +35,7 @@ class ObjectStorageServiceTest {
         properties.setEndpoint("http://localhost:19000");
         properties.setAccessKey("test-access-key");
         properties.setSecretKey("test-secret-key");
-        properties.setBucket("superbiz-agent");
+        properties.setBucket("soarer-alert");
         properties.setRegion("us-east-1");
         properties.setAutoCreateBucket(false);
         storageService = new ObjectStorageService(s3Client, properties);
@@ -57,12 +57,12 @@ class ObjectStorageServiceTest {
         ArgumentCaptor<PutObjectRequest> requestCaptor = ArgumentCaptor.forClass(PutObjectRequest.class);
         verify(s3Client).putObject(requestCaptor.capture(), any(RequestBody.class));
         PutObjectRequest request = requestCaptor.getValue();
-        assertThat(request.bucket()).isEqualTo("superbiz-agent");
+        assertThat(request.bucket()).isEqualTo("soarer-alert");
         assertThat(request.key()).isEqualTo(key);
         assertThat(request.contentType()).isEqualTo("text/markdown");
         assertThat(request.contentLength()).isEqualTo(7L);
         assertThat(storageService.getObjectUrl(key))
-                .isEqualTo("http://localhost:19000/superbiz-agent/" + key);
+                .isEqualTo("http://localhost:19000/soarer-alert/" + key);
     }
 
     @Test
@@ -82,6 +82,6 @@ class ObjectStorageServiceTest {
 
         ArgumentCaptor<CreateBucketRequest> requestCaptor = ArgumentCaptor.forClass(CreateBucketRequest.class);
         verify(s3Client).createBucket(requestCaptor.capture());
-        assertThat(requestCaptor.getValue().bucket()).isEqualTo("superbiz-agent");
+        assertThat(requestCaptor.getValue().bucket()).isEqualTo("soarer-alert");
     }
 }

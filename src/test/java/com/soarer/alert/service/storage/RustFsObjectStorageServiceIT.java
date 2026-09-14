@@ -20,7 +20,7 @@ class RustFsObjectStorageServiceIT {
         properties.setEndpoint("http://localhost:19000");
         properties.setAccessKey("rustfsadmin");
         properties.setSecretKey("rustfsadmin");
-        properties.setBucket("superbiz-agent");
+        properties.setBucket("soarer-alert");
         properties.setRegion("us-east-1");
         properties.setAutoCreateBucket(true);
 

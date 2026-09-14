@@ -36,7 +36,7 @@ class DocumentPersistenceServiceTest {
                 validatedDocument,
                 "hash-1",
                 "documents/2026/09/04/runbook.md",
-                "http://localhost:19000/superbiz-agent/documents/2026/09/04/runbook.md",
+                "http://localhost:19000/soarer-alert/documents/2026/09/04/runbook.md",
                 null
         );
 

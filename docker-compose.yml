@@ -92,7 +92,7 @@ services:
       RUSTFS_ENDPOINT: http://rustfs:9000
       RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-rustfsadmin}
       RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-rustfsadmin}
-      RUSTFS_BUCKET: ${RUSTFS_BUCKET:-superbiz-agent}
+      RUSTFS_BUCKET: ${RUSTFS_BUCKET:-soarer-alert}
       RUSTFS_REGION: ${RUSTFS_REGION:-us-east-1}
       RUSTFS_AUTO_CREATE_BUCKET: ${RUSTFS_AUTO_CREATE_BUCKET:-true}
       MCP_CLIENT_ENABLED: ${MCP_CLIENT_ENABLED:-false}

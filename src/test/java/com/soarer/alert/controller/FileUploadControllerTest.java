@@ -35,7 +35,7 @@ class FileUploadControllerTest {
     private static final UUID DOCUMENT_ID = UUID.randomUUID();
     private static final String CONTENT_HASH = "hash-1";
     private static final String STORAGE_KEY = "documents/2026/09/04/runbook.md";
-    private static final String STORAGE_URL = "http://localhost:19000/superbiz-agent/documents/runbook.md";
+    private static final String STORAGE_URL = "http://localhost:19000/soarer-alert/documents/runbook.md";
 
     private final DocumentValidationService validationService = mock(DocumentValidationService.class);
     private final ContentHashService hashService = mock(ContentHashService.class);
