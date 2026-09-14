@@ -11,7 +11,7 @@
         <relativePath/>
     </parent>
 
-    <groupId>org.example</groupId>
+    <groupId>com.soarer.alert</groupId>
     <artifactId>soarer-alert-service</artifactId>
     <version>1.0-SNAPSHOT</version>
 
@@ -238,7 +238,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>org.example.Main</mainClass>
+                    <mainClass>com.soarer.alert.Main</mainClass>
                 </configuration>
             </plugin>
             
