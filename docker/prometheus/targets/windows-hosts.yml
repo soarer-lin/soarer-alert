@@ -1,0 +1,8 @@
+# Add one target per Windows host. Replace host.docker.internal:9182 with the
+# real host or server IP when moving beyond the local demo machine.
+- targets:
+    - host.docker.internal:9182
+  labels:
+    hostname: DESKTOP-4B1Q8TV
+    environment: local
+    os: windows

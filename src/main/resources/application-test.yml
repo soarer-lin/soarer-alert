@@ -1,0 +1,33 @@
+spring:
+  ai:
+    dashscope:
+      api-key: ${DASHSCOPE_API_KEY:test-api-key}
+    mcp:
+      client:
+        enabled: false
+  main:
+    lazy-initialization: true
+
+server:
+  port: 0
+
+dashscope:
+  api:
+    key: ${DASHSCOPE_API_KEY:test-api-key}
+
+prometheus:
+  mock-enabled: true
+
+cls:
+  mock-enabled: true
+
+app:
+  document-index:
+    enabled: false
+  storage:
+    endpoint: http://localhost:19000
+    access-key: test-access-key
+    secret-key: test-secret-key
+    bucket: test-bucket
+    region: us-east-1
+    auto-create-bucket: false

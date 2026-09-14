@@ -1,0 +1,11 @@
+.git
+.idea
+target
+uploads
+logs
+*.log
+*.err.log
+.env
+.DS_Store
+phase*.png
+

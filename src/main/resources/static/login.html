@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 SoarerAlertAgent</title>
+    <link rel="stylesheet" href="auth.css">
+    <link rel="stylesheet" href="theme.css">
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.462.0/dist/umd/lucide.min.js"></script>
+</head>
+<body class="auth-page">
+<main class="auth-shell">
+    <section class="auth-card">
+        <div class="auth-brand">
+            <span class="auth-brand-mark">S</span>
+            <div>
+                <h1>SoarerAlertAgent</h1>
+                <p>智能告警排查平台</p>
+            </div>
+        </div>
+
+        <form id="loginForm" autocomplete="on">
+            <label class="auth-field">
+                <span>用户名</span>
+                <input type="text" id="username" name="username" autocomplete="username" required autofocus>
+            </label>
+            <label class="auth-field">
+                <span>密码</span>
+                <div class="auth-password">
+                    <input type="password" id="password" name="password" autocomplete="current-password" required>
+                    <button type="button" class="auth-icon-button" data-password-toggle="#password"
+                            aria-label="显示密码" aria-pressed="false">
+                        <span class="auth-icon" data-icon-show><i data-lucide="eye"></i></span>
+                        <span class="auth-icon hidden" data-icon-hide><i data-lucide="eye-off"></i></span>
+                    </button>
+                </div>
+            </label>
+            <p class="auth-alert error hidden" id="loginError"></p>
+            <button class="auth-button primary" id="loginButton" type="submit">
+                <i data-lucide="log-in"></i>
+                <span>登录</span>
+            </button>
+            <div class="auth-switch-row">
+                <span>还没有账号？请联系管理员获取账号</span>
+            </div>
+        </form>
+    </section>
+</main>
+<script src="login.js"></script>
+</body>
+</html>

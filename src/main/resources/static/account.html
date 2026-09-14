@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>账号设置</title>
+    <link rel="stylesheet" href="auth.css">
+    <link rel="stylesheet" href="theme.css">
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.462.0/dist/umd/lucide.min.js"></script>
+</head>
+<body class="auth-page">
+<div class="auth-page-header">
+    <h1>账号设置</h1>
+    <div class="auth-page-header-actions">
+        <span class="auth-user-chip"><strong data-auth-name>加载中</strong><span data-auth-role></span></span>
+        <a class="auth-button" href="/"><i data-lucide="message-square-text"></i><span>返回聊天</span></a>
+        <a class="auth-button" href="/ops.html" data-auth-ops><i data-lucide="activity"></i><span>运维工作台</span></a>
+        <a class="auth-button hidden" href="/admin.html" data-auth-admin><i data-lucide="users"></i><span>用户管理</span></a>
+        <button class="auth-button danger hidden" type="button" data-auth-logout><i data-lucide="log-out"></i><span>退出登录</span></button>
+    </div>
+</div>
+
+<main class="auth-content">
+    <section class="auth-panel">
+        <h2>修改密码</h2>
+        <p class="auth-alert info hidden" id="forcedNotice">当前密码由管理员初始化，请先设置新密码。</p>
+        <p class="auth-alert error hidden" id="passwordError"></p>
+        <p class="auth-alert info hidden" id="passwordSuccess">密码已更新。</p>
+
+        <form id="passwordForm" class="auth-form-grid">
+            <label class="auth-field">
+                <span>原密码</span>
+                <input type="password" id="oldPassword" autocomplete="current-password" required>
+            </label>
+            <label class="auth-field">
+                <span>新密码</span>
+                <input type="password" id="newPassword" minlength="6" autocomplete="new-password" required>
+            </label>
+            <label class="auth-field">
+                <span>确认新密码</span>
+                <input type="password" id="confirmPassword" minlength="6" autocomplete="new-password" required>
+            </label>
+            <div>
+                <button class="auth-button primary" id="passwordButton" type="submit"><i data-lucide="key-round"></i><span>保存新密码</span></button>
+            </div>
+        </form>
+    </section>
+</main>
+
+<script src="auth.js"></script>
+<script src="account.js"></script>
+</body>
+</html>

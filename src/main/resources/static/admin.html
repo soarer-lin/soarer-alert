@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户管理</title>
+    <link rel="stylesheet" href="auth.css">
+    <link rel="stylesheet" href="theme.css">
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.462.0/dist/umd/lucide.min.js"></script>
+</head>
+<body class="auth-page">
+<div class="auth-page-header">
+    <h1>用户管理</h1>
+    <div class="auth-page-header-actions">
+        <span class="auth-user-chip"><strong data-auth-name>加载中</strong><span data-auth-role></span></span>
+        <a class="auth-button" href="/">聊天</a>
+        <a class="auth-button" href="/ops.html">运维工作台</a>
+        <a class="auth-button" href="/account.html">账号设置</a>
+        <button class="auth-button danger" type="button" data-auth-logout>退出登录</button>
+    </div>
+</div>
+
+<main class="auth-content">
+    <section class="auth-panel">
+        <h2>新建账号</h2>
+        <p class="auth-alert error hidden" id="userError"></p>
+        <form id="createForm" class="auth-form-grid">
+            <label class="auth-field">
+                <span>账号</span>
+                <input type="text" id="createUsername" minlength="3" maxlength="64" required>
+            </label>
+            <label class="auth-field">
+                <span>姓名</span>
+                <input type="text" id="createDisplayName" maxlength="100">
+            </label>
+            <label class="auth-field">
+                <span>角色</span>
+                <select id="createRole">
+                    <option value="OPS">OPS</option>
+                    <option value="ADMIN">ADMIN</option>
+                </select>
+            </label>
+            <label class="auth-field">
+                <span>初始密码</span>
+                <input type="password" id="createPassword" minlength="6" autocomplete="new-password" required>
+            </label>
+            <div>
+                <button class="auth-button primary" id="createButton" type="submit">
+                    <i data-lucide="user-plus"></i><span>创建</span>
+                </button>
+            </div>
+        </form>
+    </section>
+
+    <div class="auth-section-title">
+        <h2>账号列表</h2>
+        <div class="auth-page-header-actions">
+            <button class="auth-button" id="prevUsers" type="button"><i data-lucide="chevron-left"></i><span>上一页</span></button>
+            <span class="auth-muted" id="userPageInfo">0 / 0</span>
+            <button class="auth-button" id="nextUsers" type="button"><span>下一页</span><i data-lucide="chevron-right"></i></button>
+        </div>
+    </div>
+    <section class="auth-panel">
+        <div class="auth-table-wrap user-table-wrap">
+            <table class="auth-table">
+                <thead>
+                <tr>
+                    <th>账号</th>
+                    <th>姓名</th>
+                    <th>角色</th>
+                    <th>状态</th>
+                    <th>最近登录</th>
+                    <th>剩余次数</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody id="userRows"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <div class="auth-section-title">
+        <h2>登录审计</h2>
+        <div class="auth-page-header-actions">
+            <button class="auth-button" id="prevAudit" type="button"><i data-lucide="chevron-left"></i><span>上一页</span></button>
+            <span class="auth-muted" id="auditPageInfo">0 / 0</span>
+            <button class="auth-button" id="nextAudit" type="button"><span>下一页</span><i data-lucide="chevron-right"></i></button>
+        </div>
+    </div>
+    <section class="auth-panel">
+        <div class="auth-table-wrap">
+            <table class="auth-table">
+                <thead>
+                <tr>
+                    <th>时间</th>
+                    <th>账号</th>
+                    <th>结果</th>
+                    <th>IP</th>
+                    <th>失败原因</th>
+                </tr>
+                </thead>
+                <tbody id="auditRows"></tbody>
+            </table>
+        </div>
+    </section>
+</main>
+
+<div class="auth-modal-backdrop hidden" id="resetModal">
+    <section class="auth-modal">
+        <h2>重置密码</h2>
+        <p class="auth-muted" id="resetTarget"></p>
+        <p class="auth-alert error hidden" id="resetError"></p>
+        <form id="resetForm">
+            <label class="auth-field">
+                <span>新密码</span>
+                <input type="password" id="resetPassword" minlength="6" autocomplete="new-password" required>
+            </label>
+            <div class="auth-page-header-actions">
+                <button class="auth-button" type="button" id="cancelReset">取消</button>
+                <button class="auth-button primary" type="submit" id="resetButton">保存</button>
+            </div>
+        </form>
+    </section>
+</div>
+
+<div class="auth-modal-backdrop hidden" id="quotaModal">
+    <section class="auth-modal">
+        <h2>设置对话次数</h2>
+        <p class="auth-muted" id="quotaTarget"></p>
+        <p class="auth-alert error hidden" id="quotaError"></p>
+        <form id="quotaForm">
+            <label class="auth-field">
+                <span>次数</span>
+                <select id="quotaPreset">
+                    <option value="10">10</option>
+                    <option value="30">30</option>
+                    <option value="50">50</option>
+                    <option value="unlimited">无限制</option>
+                    <option value="custom">自定义</option>
+                </select>
+            </label>
+            <label class="auth-field hidden" id="quotaCustomField">
+                <span>自定义次数</span>
+                <input type="number" id="quotaCustom" min="1" max="999999" step="1">
+            </label>
+            <div class="auth-page-header-actions">
+                <button class="auth-button" type="button" id="cancelQuota">取消</button>
+                <button class="auth-button primary" type="submit" id="quotaButton">保存</button>
+            </div>
+        </form>
+    </section>
+</div>
+
+<script src="auth.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>

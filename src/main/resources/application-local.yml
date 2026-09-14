@@ -1,0 +1,58 @@
+spring:
+  config:
+    import: optional:file:.env[.properties]
+  ai:
+    dashscope:
+      api-key: ${DASHSCOPE_API_KEY:your-api-key-here}
+    mcp:
+      client:
+        enabled: ${MCP_CLIENT_ENABLED:false}
+        name: ${MCP_CLIENT_NAME:tencent-cls}
+        version: ${MCP_CLIENT_VERSION:1.0.0}
+        request-timeout: ${MCP_CLIENT_REQUEST_TIMEOUT:60s}
+        type: ${MCP_CLIENT_TYPE:ASYNC}
+        sse:
+          connections:
+            tencent-cls:
+              url: ${CLS_MCP_URL:http://localhost:13000}
+              sse-endpoint: ${CLS_MCP_SSE_ENDPOINT:/sse}
+  main:
+    lazy-initialization: ${SPRING_LAZY_INITIALIZATION:false}
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:15432}/${POSTGRES_DB:superbiz_agent}
+    username: ${POSTGRES_USER:superbiz}
+    password: ${POSTGRES_PASSWORD:superbiz_local_password}
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: 0
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:16379}
+
+server:
+  port: ${SERVER_PORT:9900}
+
+dashscope:
+  api:
+    key: ${DASHSCOPE_API_KEY:your-api-key-here}
+
+prometheus:
+  base-url: ${PROMETHEUS_BASE_URL:http://localhost:19090}
+  mock-enabled: ${PROMETHEUS_MOCK_ENABLED:true}
+
+cls:
+  mock-enabled: ${CLS_MOCK_ENABLED:true}
+
+app:
+  storage:
+    endpoint: ${RUSTFS_ENDPOINT:http://localhost:19000}
+    access-key: ${RUSTFS_ACCESS_KEY:rustfsadmin}
+    secret-key: ${RUSTFS_SECRET_KEY:rustfsadmin}
+    bucket: ${RUSTFS_BUCKET:superbiz-agent}
+    region: ${RUSTFS_REGION:us-east-1}
+    api-call-timeout: ${RUSTFS_API_CALL_TIMEOUT:60s}
+    api-call-attempt-timeout: ${RUSTFS_API_CALL_ATTEMPT_TIMEOUT:20s}
+    auto-create-bucket: ${RUSTFS_AUTO_CREATE_BUCKET:true}

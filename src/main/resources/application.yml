@@ -1,0 +1,152 @@
+spring:
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
+  application:
+    name: soarer-alert-service
+  ai:
+    dashscope:
+      chat:
+        options:
+          timeout: 180000
+    vectorstore:
+      pgvector:
+        index-type: HNSW
+        distance-type: COSINE_DISTANCE
+        dimensions: 1024
+        initialize-schema: false
+        remove-existing-vector-store-table: false
+      retry:
+        max-attempts: 3
+        backoff:
+          initial-interval: 2000
+          multiplier: 2
+          max-interval: 10000
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 51MB
+
+server:
+  servlet:
+    session:
+      timeout: ${AUTH_SESSION_TIMEOUT:12h}
+      cookie:
+        name: SOARER_ALERT_SESSION
+        same-site: lax
+        secure: ${AUTH_SESSION_COOKIE_SECURE:false}
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] [traceId=%X{traceId:-}] [sessionId=%X{sessionId:-}] [diagnosisRunId=%X{diagnosisRunId:-}] %logger{36} - %msg%n"
+
+file:
+  upload:
+    path: ./uploads
+    allowed-extensions: txt,md,markdown,pdf,doc,docx
+    max-size-bytes: 52428800
+
+dashscope:
+  embedding:
+    model: ${DASHSCOPE_EMBEDDING_MODEL:text-embedding-v3}
+  chat:
+    model: ${DASHSCOPE_CHAT_MODEL:qwen3.7-flash}
+    base-url: ${DASHSCOPE_CHAT_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode/v1}
+    completions-path: ${DASHSCOPE_CHAT_COMPLETIONS_PATH:/chat/completions}
+    enable-thinking: ${DASHSCOPE_CHAT_ENABLE_THINKING:false}
+
+document:
+  parse:
+    max-text-chars: 2000000
+  chunk:
+    max-size: 800
+    overlap: 100
+
+rag:
+  top-k: 3
+  model: ${DASHSCOPE_CHAT_MODEL:qwen3.7-flash}
+
+app:
+  auth:
+    admin-username: ${AUTH_ADMIN_USERNAME:}
+    admin-initial-password: ${AUTH_ADMIN_INITIAL_PASSWORD:}
+    session-timeout-minutes: ${AUTH_SESSION_TIMEOUT_MINUTES:720}
+    max-failed-attempts: ${AUTH_MAX_FAILED_ATTEMPTS:5}
+    lock-duration-minutes: ${AUTH_LOCK_DURATION_MINUTES:15}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:*}
+  mcp:
+    keepalive-enabled: ${MCP_KEEPALIVE_ENABLED:true}
+    keepalive-interval-ms: ${MCP_KEEPALIVE_INTERVAL_MS:240000}
+    keepalive-initial-delay-ms: ${MCP_KEEPALIVE_INITIAL_DELAY_MS:120000}
+  document-index:
+    enabled: ${DOCUMENT_INDEX_STREAM_ENABLED:true}
+    stream-key: ${DOCUMENT_INDEX_STREAM_KEY:soarer:document-index:stream}
+    group: ${DOCUMENT_INDEX_STREAM_GROUP:document-index-workers}
+    consumer-name: ${DOCUMENT_INDEX_CONSUMER_NAME:local-document-worker-1}
+    dead-letter-key: ${DOCUMENT_INDEX_DEAD_LETTER_KEY:soarer:document-index:dead-letter}
+    max-attempts: ${DOCUMENT_INDEX_MAX_ATTEMPTS:3}
+    batch-size: ${DOCUMENT_INDEX_BATCH_SIZE:10}
+    poll-interval-ms: ${DOCUMENT_INDEX_POLL_INTERVAL_MS:1000}
+    poll-timeout: ${DOCUMENT_INDEX_POLL_TIMEOUT:PT1S}
+    recovery-interval-ms: ${DOCUMENT_INDEX_RECOVERY_INTERVAL_MS:30000}
+    claim-timeout: ${DOCUMENT_INDEX_CLAIM_TIMEOUT:PT2M}
+  diagnosis-stream:
+    enabled: ${DIAGNOSIS_STREAM_ENABLED:true}
+    stream-key: ${DIAGNOSIS_STREAM_KEY:soarer:diagnosis:stream}
+    group: ${DIAGNOSIS_STREAM_GROUP:diagnosis-workers}
+    consumer-name: ${DIAGNOSIS_CONSUMER_NAME:local-diagnosis-worker-1}
+    dead-letter-key: ${DIAGNOSIS_DEAD_LETTER_KEY:soarer:diagnosis:dead-letter}
+    max-attempts: ${DIAGNOSIS_MAX_ATTEMPTS:3}
+    batch-size: ${DIAGNOSIS_BATCH_SIZE:1}
+    poll-interval-ms: ${DIAGNOSIS_POLL_INTERVAL_MS:1000}
+    poll-timeout: ${DIAGNOSIS_POLL_TIMEOUT:PT1S}
+    recovery-interval-ms: ${DIAGNOSIS_RECOVERY_INTERVAL_MS:30000}
+    claim-timeout: ${DIAGNOSIS_CLAIM_TIMEOUT:PT2M}
+
+prometheus:
+  base-url: http://localhost:9090
+  timeout: 10
+
+cls:
+  mock-enabled: false
+  upload:
+    enabled: ${CLS_UPLOAD_ENABLED:false}
+    region: ${TENCENTCLOUD_REGION:ap-guangzhou}
+    endpoint: ${CLS_UPLOAD_ENDPOINT:}
+    secret-id: ${CLS_WRITER_SECRET_ID:}
+    secret-key: ${CLS_WRITER_SECRET_KEY:}
+    service-name: ${CLS_SERVICE_NAME:soarer-alert-agent}
+    environment: ${CLS_ENVIRONMENT:${spring.profiles.active:local}}
+    host-name: ${CLS_HOST_NAME:}
+    ip: ${CLS_SERVICE_IP:}
+    port: ${SERVER_PORT:9900}
+    send-thread-count: ${CLS_UPLOAD_SEND_THREAD_COUNT:1}
+    total-size-in-bytes: ${CLS_UPLOAD_TOTAL_SIZE_IN_BYTES:8388608}
+    max-block-ms: ${CLS_UPLOAD_MAX_BLOCK_MS:2000}
+    batch-count-threshold: ${CLS_UPLOAD_BATCH_COUNT_THRESHOLD:100}
+    linger-ms: ${CLS_UPLOAD_LINGER_MS:1000}
+    retries: ${CLS_UPLOAD_RETRIES:3}
+    base-retry-backoff-ms: ${CLS_UPLOAD_BASE_RETRY_BACKOFF_MS:200}
+    max-retry-backoff-ms: ${CLS_UPLOAD_MAX_RETRY_BACKOFF_MS:5000}
+    topics:
+      app: ${CLS_APP_TOPIC_ID:d4fd734b-0451-4567-92a7-e3bd68d9c5d8}
+      host: ${CLS_HOST_TOPIC_ID:d2a46e90-7a30-447e-bf5c-a9113e18ab88}
+      middleware: ${CLS_MIDDLEWARE_TOPIC_ID:2708c9fa-9d93-4f94-9508-659108eb70c7}
+      diagnosis: ${CLS_DIAGNOSIS_TOPIC_ID:e574cb90-10ba-445e-8467-cc99f563ca11}

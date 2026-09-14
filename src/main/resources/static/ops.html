@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SoarerAlertAgent 运维工作台</title>
+    <link rel="stylesheet" href="ops.css?v=20260914-2">
+    <link rel="stylesheet" href="theme.css?v=20260914-2">
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.462.0/dist/umd/lucide.min.js"></script>
+</head>
+<body class="ops-page">
+<header class="ops-header">
+    <div class="ops-brand">
+        <a href="/" title="返回聊天界面">
+            <i data-lucide="message-square-text"></i>
+            <span>SoarerAlertAgent</span>
+        </a>
+    </div>
+    <nav class="ops-nav" aria-label="工作台视图">
+        <button class="ops-nav-button active" data-view="overview" type="button">
+            <i data-lucide="layout-dashboard"></i><span>总览</span>
+        </button>
+        <button class="ops-nav-button" data-view="diagnosis" type="button">
+            <i data-lucide="brain-circuit"></i><span>诊断</span>
+        </button>
+        <button class="ops-nav-button" data-view="alerts" type="button">
+            <i data-lucide="bell-ring"></i><span>告警</span>
+        </button>
+        <button class="ops-nav-button" data-view="documents" type="button">
+            <i data-lucide="folder-open"></i><span>文档</span>
+        </button>
+    </nav>
+    <div class="ops-header-actions">
+        <span class="ops-user-chip"><strong data-auth-name>加载中</strong><span data-auth-role></span></span>
+        <span class="connection-pill" id="connectionPill"><span class="connection-dot"></span>连接中</span>
+        <a class="ops-button compact hidden" href="/account.html" data-auth-account title="账号设置">
+            <i data-lucide="user-cog"></i><span>账号</span>
+        </a>
+        <a class="ops-button compact hidden" href="/admin.html" data-auth-admin title="用户管理">
+            <i data-lucide="users"></i><span>用户</span>
+        </a>
+        <button class="ops-button" id="refreshButton" type="button" title="刷新数据">
+            <i data-lucide="refresh-cw"></i><span>刷新</span>
+        </button>
+        <button class="ops-button danger hidden" type="button" data-auth-logout title="退出登录">
+            <i data-lucide="log-out"></i><span>退出</span>
+        </button>
+    </div>
+</header>
+
+<main class="ops-main">
+    <section class="ops-view active" id="overviewView">
+        <div class="metrics-grid" id="metricsGrid">
+            <article class="metric-tile"><span>任务总数</span><strong id="totalRuns">0</strong></article>
+            <article class="metric-tile queued"><span>排队中</span><strong id="queuedRuns">0</strong></article>
+            <article class="metric-tile running"><span>执行中</span><strong id="runningRuns">0</strong></article>
+            <article class="metric-tile retrying"><span>重试中</span><strong id="retryingRuns">0</strong></article>
+            <article class="metric-tile success"><span>成功</span><strong id="successfulRuns">0</strong></article>
+            <article class="metric-tile failed"><span>失败</span><strong id="failedRuns">0</strong></article>
+            <article class="metric-tile report"><span>成功报告</span><strong id="successfulReports">0</strong></article>
+            <article class="metric-tile alert"><span>告警</span><strong id="alertsCount">0</strong></article>
+            <article class="metric-tile document"><span>文档</span><strong id="documentsCount">0</strong></article>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">
+                <h2>近期诊断</h2>
+                <button class="ops-button compact" data-goto="diagnosis" type="button">
+                    <i data-lucide="arrow-right"></i><span>查看全部</span>
+                </button>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>状态</th>
+                        <th>开始时间</th>
+                        <th>耗时</th>
+                        <th>请求</th>
+                    </tr>
+                    </thead>
+                    <tbody id="recentRunsBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <section class="ops-view" id="diagnosisView">
+        <div class="diagnosis-layout">
+            <aside class="panel runs-panel">
+                <div class="panel-header">
+                    <h2>诊断任务</h2>
+                    <span class="count-badge" id="runCount">0</span>
+                </div>
+                <div class="runs-controls">
+                    <label for="statusFilter">状态</label>
+                    <select id="statusFilter">
+                        <option value="">全部</option>
+                        <option value="QUEUED">QUEUED</option>
+                        <option value="RUNNING">RUNNING</option>
+                        <option value="RETRYING">RETRYING</option>
+                        <option value="SUCCESS">SUCCESS</option>
+                        <option value="FAILED">FAILED</option>
+                        <option value="CANCELED">CANCELED</option>
+                    </select>
+                </div>
+                <div class="new-run-form">
+                    <input id="newRunInput" type="text" maxlength="500" placeholder="诊断请求">
+                    <button class="ops-button primary" id="createRunButton" type="button" title="创建诊断任务">
+                        <i data-lucide="plus"></i><span>新建</span>
+                    </button>
+                </div>
+                <div class="table-container runs-table">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>状态</th>
+                            <th>开始时间</th>
+                            <th>请求</th>
+                        </tr>
+                        </thead>
+                        <tbody id="runsBody"></tbody>
+                    </table>
+                </div>
+            </aside>
+
+            <section class="panel detail-panel">
+                <div class="panel-header detail-header">
+                    <div>
+                        <h2>任务详情</h2>
+                        <p id="selectedRunTitle">未选择任务</p>
+                    </div>
+                    <div class="detail-actions">
+                        <button class="ops-button compact" data-control="status" type="button" title="查询状态">
+                            <i data-lucide="activity"></i><span>状态</span>
+                        </button>
+                        <button class="ops-button compact warning" data-control="pause" type="button" title="暂停任务">
+                            <i data-lucide="pause"></i><span>暂停</span>
+                        </button>
+                        <button class="ops-button compact warning" data-control="resume" type="button" title="恢复任务">
+                            <i data-lucide="play"></i><span>恢复</span>
+                        </button>
+                        <button class="ops-button compact danger" data-control="cancel" type="button" title="取消任务">
+                            <i data-lucide="x"></i><span>取消</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="detail-tabs" role="tablist">
+                    <button class="active" data-tab="summary" type="button">概要</button>
+                    <button data-tab="timeline" type="button">时间线</button>
+                    <button data-tab="tools" type="button">工具</button>
+                    <button data-tab="evidence" type="button">证据</button>
+                    <button data-tab="report" type="button">报告</button>
+                </div>
+                <div class="detail-content" id="detailContent"></div>
+            </section>
+        </div>
+    </section>
+
+    <section class="ops-view" id="alertsView">
+        <div class="panel">
+            <div class="panel-header">
+                <h2>告警</h2>
+                <span class="count-badge" id="alertCount">0</span>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>级别</th>
+                        <th>名称</th>
+                        <th>服务</th>
+                        <th>环境</th>
+                        <th>状态</th>
+                        <th>最近触发</th>
+                    </tr>
+                    </thead>
+                    <tbody id="alertsBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <section class="ops-view" id="documentsView">
+        <div class="panel">
+            <div class="panel-header">
+                <h2>知识文档</h2>
+                <input id="documentUploadInput" type="file"
+                       accept=".txt,.md,.markdown,.pdf,.doc,.docx" hidden>
+                <button class="ops-button compact" id="documentUploadButton" type="button" title="上传知识文档">
+                    <i data-lucide="upload"></i><span>上传</span>
+                </button>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>文件</th>
+                        <th>类型</th>
+                        <th>大小</th>
+                        <th>状态</th>
+                        <th>索引时间</th>
+                        <th>创建时间</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody id="documentsBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+</main>
+
+<div class="toast" id="toast"></div>
+<script src="/vendor/marked.min.js?v=20260914-3"></script>
+<script src="/vendor/purify.min.js?v=20260914-3"></script>
+<script src="auth.js"></script>
+<script src="ops.js?v=20260914-4"></script>
+</body>
+</html>

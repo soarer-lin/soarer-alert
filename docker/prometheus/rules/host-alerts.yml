@@ -1,0 +1,64 @@
+groups:
+  - name: linux-host-alerts
+    rules:
+      - alert: HighCPUUsage
+        expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+          os: linux
+        annotations:
+          summary: "High CPU usage on {{ $labels.hostname }}"
+          description: "CPU usage on {{ $labels.hostname }} / {{ $labels.instance }} has exceeded 80% for 5 minutes."
+
+      - alert: HighMemoryUsage
+        expr: 100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) > 85
+        for: 5m
+        labels:
+          severity: warning
+          os: linux
+        annotations:
+          summary: "High memory usage on {{ $labels.hostname }}"
+          description: "Memory usage on {{ $labels.hostname }} / {{ $labels.instance }} has exceeded 85% for 5 minutes."
+
+      - alert: HighDiskUsage
+        expr: 100 * (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs|iso9660|nsfs|ramfs|tracefs|cgroup"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay|squashfs|iso9660|nsfs|ramfs|tracefs|cgroup"})) > 85
+        for: 5m
+        labels:
+          severity: warning
+          os: linux
+        annotations:
+          summary: "High disk usage on {{ $labels.hostname }}"
+          description: "Disk usage on {{ $labels.hostname }} / {{ $labels.instance }} / {{ $labels.mountpoint }} has exceeded 85% for 5 minutes."
+
+  - name: windows-host-alerts
+    rules:
+      - alert: HighCPUUsage
+        expr: 100 - (avg by (instance) (rate(windows_cpu_time_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+          os: windows
+        annotations:
+          summary: "High CPU usage on {{ $labels.hostname }}"
+          description: "CPU usage on {{ $labels.hostname }} / {{ $labels.instance }} has exceeded 80% for 5 minutes."
+
+      - alert: HighMemoryUsage
+        expr: 100 * (1 - (windows_memory_available_bytes / windows_memory_total_bytes)) > 85
+        for: 5m
+        labels:
+          severity: warning
+          os: windows
+        annotations:
+          summary: "High memory usage on {{ $labels.hostname }}"
+          description: "Memory usage on {{ $labels.hostname }} / {{ $labels.instance }} has exceeded 85% for 5 minutes."
+
+      - alert: HighDiskUsage
+        expr: 100 * (1 - (windows_logical_disk_free_bytes / windows_logical_disk_size_bytes)) > 85
+        for: 5m
+        labels:
+          severity: warning
+          os: windows
+        annotations:
+          summary: "High disk usage on {{ $labels.hostname }}"
+          description: "Disk usage on {{ $labels.hostname }} / {{ $labels.instance }} / {{ $labels.volume }} has exceeded 85% for 5 minutes."

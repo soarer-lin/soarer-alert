@@ -1,0 +1,8 @@
+# Add one target per Linux host. Keep the hostname label stable; the AI tool
+# uses it to identify which server an alert belongs to.
+- targets:
+    - host.docker.internal:9100
+  labels:
+    hostname: local-linux
+    environment: local
+    os: linux
