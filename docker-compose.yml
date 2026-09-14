@@ -214,12 +214,19 @@ services:
 
 volumes:
   soarer-alert-postgres-data:
+    name: soarer-alert-postgres-data
   soarer-alert-redis-data:
+    name: soarer-alert-redis-data
   soarer-alert-rustfs-data:
+    name: soarer-alert-rustfs-data
   soarer-alert-app-uploads:
+    name: soarer-alert-app-uploads
   soarer-alert-app-logs:
+    name: soarer-alert-app-logs
   soarer-alert-prometheus-data:
+    name: soarer-alert-prometheus-data
   soarer-alert-loki-data:
+    name: soarer-alert-loki-data
 
 networks:
   soarer-alert-infra:
