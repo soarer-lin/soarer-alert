@@ -114,8 +114,8 @@ services:
       CLS_ENVIRONMENT: ${CLS_ENVIRONMENT:-local}
       CLS_HOST_NAME: ${CLS_HOST_NAME:-}
       CLS_SERVICE_IP: ${CLS_SERVICE_IP:-}
-      CLS_APP_TOPIC_ID: ${CLS_APP_TOPIC_ID:-d4fd734b-0451-4567-92a7-e3bd68d9c5d8}
-      CLS_DIAGNOSIS_TOPIC_ID: ${CLS_DIAGNOSIS_TOPIC_ID:-e574cb90-10ba-445e-8467-cc99f563ca11}
+      CLS_APP_TOPIC_ID: ${CLS_APP_TOPIC_ID:-}
+      CLS_DIAGNOSIS_TOPIC_ID: ${CLS_DIAGNOSIS_TOPIC_ID:-}
     volumes:
       - soarer-alert-app-uploads:/app/uploads
       - soarer-alert-app-logs:/app/logs

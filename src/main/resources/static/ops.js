@@ -10,6 +10,7 @@
         runs: [],
         selectedRunId: null,
         detail: null,
+        detailFingerprint: null,
         detailTab: 'summary',
         alerts: [],
         documents: []
@@ -104,12 +105,22 @@
 
     async function loadDetail() {
         if (!state.selectedRunId) {
+            if (state.detail === null) {
+                return;
+            }
             state.detail = null;
+            state.detailFingerprint = null;
             renderDetail();
             return;
         }
-        state.detail = await request(`/ai_ops/runs/${state.selectedRunId}`);
-        renderDetail();
+        const detail = await request(`/ai_ops/runs/${state.selectedRunId}`);
+        const fingerprint = JSON.stringify(detail);
+        if (fingerprint === state.detailFingerprint) {
+            return;
+        }
+        state.detail = detail;
+        state.detailFingerprint = fingerprint;
+        renderDetail({preserveScrollTop: true});
     }
 
     async function loadAlerts() {
@@ -148,6 +159,7 @@
             });
             state.selectedRunId = run.id;
             state.detailTab = 'summary';
+            updateDetailTabButtons();
             elements.newRunInput.value = '';
             setView('diagnosis');
             await loadRuns(false);
@@ -269,10 +281,14 @@
 
     function setDetailTab(tab) {
         state.detailTab = tab;
-        document.querySelectorAll('.detail-tabs button').forEach(button => {
-            button.classList.toggle('active', button.dataset.tab === tab);
-        });
+        updateDetailTabButtons();
         renderDetail();
+    }
+
+    function updateDetailTabButtons() {
+        document.querySelectorAll('.detail-tabs button').forEach(button => {
+            button.classList.toggle('active', button.dataset.tab === state.detailTab);
+        });
     }
 
     function renderRecentRuns() {
@@ -296,10 +312,14 @@
         `).join('') || emptyRow(3, '当前筛选没有任务');
     }
 
-    function renderDetail() {
+    function renderDetail(options = {}) {
+        const scrollTop = options.preserveScrollTop ? elements.detailContent.scrollTop : 0;
         if (!state.detail) {
             elements.selectedRunTitle.textContent = '未选择任务';
             elements.detailContent.innerHTML = '<div class="empty-state">暂无任务详情</div>';
+            if (options.preserveScrollTop) {
+                elements.detailContent.scrollTop = scrollTop;
+            }
             return;
         }
 
@@ -308,13 +328,16 @@
         if (state.detailTab === 'summary') {
             renderSummary(run);
         } else if (state.detailTab === 'timeline') {
-            renderTimeline(state.detail.steps || []);
+            renderTimeline(state.detail.steps || [], state.detail.toolInvocations || []);
         } else if (state.detailTab === 'tools') {
             renderTools(state.detail.toolInvocations || []);
         } else if (state.detailTab === 'evidence') {
             renderEvidence(state.detail.evidence || []);
         } else if (state.detailTab === 'report') {
             renderReport(state.detail.report);
+        }
+        if (options.preserveScrollTop) {
+            elements.detailContent.scrollTop = scrollTop;
         }
     }
 
@@ -332,26 +355,75 @@
         `;
     }
 
-    function renderTimeline(steps) {
-        if (!steps.length) {
-            elements.detailContent.innerHTML = '<div class="empty-state">暂无 Agent 步骤</div>';
+    function renderTimeline(steps, invocations) {
+        const entries = [
+            ...steps.map(step => ({
+                kind: 'agent',
+                startedAt: step.startedAt,
+                sortOrder: 0,
+                step
+            })),
+            ...invocations.map(invocation => ({
+                kind: 'tool',
+                startedAt: invocation.startedAt,
+                sortOrder: 1,
+                invocation
+            }))
+        ].sort((left, right) => {
+            const timeDifference = timelineTime(left.startedAt) - timelineTime(right.startedAt);
+            if (timeDifference !== 0) {
+                return timeDifference;
+            }
+            if (left.sortOrder !== right.sortOrder) {
+                return left.sortOrder - right.sortOrder;
+            }
+            return (left.step?.stepIndex || 0) - (right.step?.stepIndex || 0);
+        });
+
+        if (!entries.length) {
+            elements.detailContent.innerHTML = '<div class="empty-state">暂无 Agent 步骤或工具调用</div>';
             return;
         }
-        elements.detailContent.innerHTML = `<div class="timeline">${steps.map(step => `
-            <article class="timeline-item ${step.status === 'FAILED' ? 'failed' : ''}">
-                <div class="timeline-marker"></div>
-                <div class="timeline-body">
-                    <div class="timeline-title">
-                        <strong>#${step.stepIndex} ${escapeHtml(stripEmoji(step.agentName))}</strong>
-                        ${statusChip(step.status)}
+        elements.detailContent.innerHTML = `<div class="timeline">${entries.map(entry => {
+            if (entry.kind === 'tool') {
+                const invocation = entry.invocation;
+                return `
+                    <article class="timeline-item timeline-tool ${invocation.status === 'FAILED' ? 'failed' : ''}">
+                        <div class="timeline-marker timeline-marker-tool"><i data-lucide="wrench"></i></div>
+                        <div class="timeline-body">
+                            <div class="timeline-title">
+                                <strong>工具调用 · ${escapeHtml(stripEmoji(invocation.toolName))}</strong>
+                                ${statusChip(invocation.status)}
+                            </div>
+                            <div class="timeline-meta text-muted">${escapeHtml(formatDateTime(invocation.startedAt))} · ${escapeHtml(formatDuration(invocation.durationMs))}</div>
+                            ${invocation.errorMessage ? `<div class="timeline-error">${escapeHtml(stripEmoji(invocation.errorMessage))}</div>` : ''}
+                        </div>
+                    </article>
+                `;
+            }
+
+            const step = entry.step;
+            return `
+                <article class="timeline-item ${step.status === 'FAILED' ? 'failed' : ''}">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-body">
+                        <div class="timeline-title">
+                            <strong>#${step.stepIndex} ${escapeHtml(stripEmoji(step.agentName))}</strong>
+                            ${statusChip(step.status)}
+                        </div>
+                        <div class="timeline-meta text-muted">${escapeHtml(formatDateTime(step.startedAt))} · ${escapeHtml(formatDuration(step.durationMs))}</div>
+                        ${step.instruction ? `<div class="timeline-summary">${escapeHtml(stripEmoji(step.instruction))}</div>` : ''}
+                        ${step.errorMessage ? `<div class="timeline-error">${escapeHtml(stripEmoji(step.errorMessage))}</div>` : ''}
                     </div>
-                    <div class="text-muted">${escapeHtml(formatDateTime(step.startedAt))} · ${escapeHtml(formatDuration(step.durationMs))}</div>
-                    ${step.instruction ? `<div class="timeline-text">${renderTimelineText(step.instruction)}</div>` : ''}
-                    ${step.outputText ? `<div class="timeline-text">${renderTimelineText(step.outputText)}</div>` : ''}
-                    ${step.errorMessage ? `<div class="timeline-text">${renderTimelineText(step.errorMessage)}</div>` : ''}
-                </div>
-            </article>
-        `).join('')}</div>`;
+                </article>
+            `;
+        }).join('')}</div>`;
+        refreshIcons();
+    }
+
+    function timelineTime(value) {
+        const time = new Date(value || '').getTime();
+        return Number.isNaN(time) ? Number.MAX_SAFE_INTEGER : time;
     }
 
     function renderTools(invocations) {

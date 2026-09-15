@@ -5,9 +5,9 @@
 使用 JDK 25 运行单元测试：
 
 ```powershell
-$env:JAVA_HOME="D:\Java_Project\tools\jdk25"
+$env:JAVA_HOME="<path-to-jdk-25>"
 $env:Path="$env:JAVA_HOME\bin;$env:Path"
-mvn -s maven-settings.local.xml test
+mvn -s .mvn\maven-settings.xml test
 ```
 
 `scripts/dev-app.ps1` 会自动设置同一个 JDK。
@@ -15,7 +15,7 @@ mvn -s maven-settings.local.xml test
 打包：
 
 ```powershell
-mvn -s maven-settings.local.xml -DskipTests package
+mvn -s .mvn\maven-settings.xml -DskipTests package
 ```
 
 ## 测试范围

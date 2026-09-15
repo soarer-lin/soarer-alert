@@ -116,10 +116,10 @@ $env:DASHSCOPE_API_KEY="your-real-key"
 
 | 主题 | Topic ID | 当前用途 |
 |---|---|---|
-| `app-logs` | `d4fd734b-0451-4567-92a7-e3bd68d9c5d8` | SoarerAlertAgent Spring Boot 应用日志 |
-| `diagnosis-logs` | `e574cb90-10ba-445e-8467-cc99f563ca11` | 诊断任务状态、重试、成功、失败和 Agent step 事件 |
-| `host-logs` | `d2a46e90-7a30-447e-bf5c-a9113e18ab88` | 预留：主机 / exporter 相关日志采集 |
-| `middleware-logs` | `2708c9fa-9d93-4f94-9508-659108eb70c7` | 预留：数据库、Redis、消息队列等中间件日志采集 |
+| `app-logs` | `<CLS_APP_TOPIC_ID>` | SoarerAlertAgent Spring Boot 应用日志 |
+| `diagnosis-logs` | `<CLS_DIAGNOSIS_TOPIC_ID>` | 诊断任务状态、重试、成功、失败和 Agent step 事件 |
+| `host-logs` | `<CLS_HOST_TOPIC_ID>` | 预留：主机 / exporter 相关日志采集 |
+| `middleware-logs` | `<CLS_MIDDLEWARE_TOPIC_ID>` | 预留：数据库、Redis、消息队列等中间件日志采集 |
 
 在当前 PowerShell 进程中注入 writer 凭证并启用上传：
 

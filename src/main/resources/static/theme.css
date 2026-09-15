@@ -65,10 +65,23 @@ html[lang] .sidebar-footer {
 html[lang] .sidebar-title,
 html[lang] .welcome-greeting p,
 html[lang] .welcome-message {
-    background: linear-gradient(100deg, #17292b 10%, var(--mint) 72%, var(--cyan));
+    background: linear-gradient(100deg, var(--mint) 10%, var(--mint) 72%, var(--cyan));
+    background-size: 100% 100%;
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+}
+
+html[lang] .sidebar-title:hover {
+    background-image: linear-gradient(
+        100deg,
+        #8ff7dc,
+        var(--mint),
+        #7fd8ff,
+        var(--cyan),
+        #8ff7dc
+    );
+    background-size: 220% 100%;
 }
 
 html[lang] .sidebar-user,

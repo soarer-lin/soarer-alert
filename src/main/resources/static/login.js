@@ -6,6 +6,7 @@
     const passwordInput = document.getElementById('password');
     const button = document.getElementById('loginButton');
     const errorBox = document.getElementById('loginError');
+    const loginModeHint = document.getElementById('loginModeHint');
 
     function refreshIcons() {
         if (window.lucide) {
@@ -61,6 +62,9 @@
             if (data && data.enabled) {
                 usernameInput.value = data.username;
                 passwordInput.value = data.password;
+                loginModeHint.textContent = '目前为测试账号，可能存在多人同时使用！';
+            } else {
+                loginModeHint.textContent = '还没有账号？请联系管理员获取账号';
             }
         } catch (error) {
             // 未开启测试账号时保持手动登录，不向用户展示系统内部错误。

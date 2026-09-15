@@ -77,36 +77,43 @@ select {
 
 .auth-brand {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 12px;
+    text-align: center;
     margin-bottom: 28px;
 }
 
-.auth-brand-mark {
-    display: grid;
-    place-items: center;
-    width: 44px;
-    height: 44px;
-    border: 1px solid rgba(53, 240, 192, 0.38);
-    border-radius: 8px;
-    background: linear-gradient(145deg, rgba(53, 240, 192, 0.24), rgba(9, 14, 17, 0.96));
-    color: var(--mint);
-    font-size: 20px;
-    font-weight: 750;
-    box-shadow: 0 12px 32px rgba(53, 240, 192, 0.12);
+.auth-brand-title {
+    margin: 0;
+    color: transparent;
+    font-size: 27px;
+    line-height: 1.16;
+    font-weight: 800;
+    letter-spacing: 0;
+    background: linear-gradient(96deg, #ffffff 4%, var(--mint) 52%, var(--cyan) 92%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    filter: drop-shadow(0 0 18px rgba(53, 240, 192, 0.2));
 }
 
-.auth-brand h1 {
-    margin: 0;
-    color: #ffffff;
-    font-size: 20px;
-    font-weight: 650;
+.auth-brand-title::after {
+    content: "";
+    display: block;
+    width: 92px;
+    height: 2px;
+    margin: 10px 0 0;
+    background: linear-gradient(90deg, transparent, var(--mint), var(--cyan), transparent);
+    transition: width 900ms var(--ease-out);
+}
+
+.auth-brand-title:hover::after {
+    width: 100%;
 }
 
 .auth-brand p {
     margin: 3px 0 0;
     color: var(--text-muted);
-    font-size: 13px;
+    font-size: 14px;
 }
 
 .auth-field {

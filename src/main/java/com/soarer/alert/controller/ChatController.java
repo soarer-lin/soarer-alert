@@ -46,6 +46,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class ChatController {
 
     private static final Logger logger = LoggerFactory.getLogger(ChatController.class);
+    private static final String AI_OPS_QUESTION = "智能运维诊断";
 
     @Autowired
     private ChatService chatService;
@@ -456,12 +457,15 @@ public class ChatController {
      * 无需用户输入，自动执行告警分析流程
      */
     @PostMapping(value = "/ai_ops", produces = "text/event-stream;charset=UTF-8")
-    public SseEmitter aiOps() {
+    public SseEmitter aiOps(@RequestBody(required = false) ChatRequest request) {
         SseEmitter emitter = new SseEmitter(600000L); // 10分钟超时（告警分析可能较慢）
         UUID currentUserId = authUserService.currentUserId().orElse(null);
+        String sessionId = request != null && request.getId() != null && !request.getId().isBlank()
+                ? request.getId().trim()
+                : "ai_ops_" + UUID.randomUUID();
 
         executor.execute(() -> {
-            streamDiagnosisResult(emitter, currentUserId);
+            streamDiagnosisResult(emitter, currentUserId, sessionId);
         });
 
         return emitter;
@@ -471,28 +475,50 @@ public class ChatController {
         return diagnosisRunService.queueRun(DiagnosisRunService.DEFAULT_REQUEST_TEXT, createdBy);
     }
 
-    private void streamDiagnosisResult(SseEmitter emitter, UUID createdBy) {
+    private void streamDiagnosisResult(SseEmitter emitter, UUID createdBy, String sessionId) {
         OpsDiagnosisRun diagnosisRun = null;
+        AtomicBoolean assistantAnswerPersisted = new AtomicBoolean(false);
         try {
+            chatSessionService.addUserMessage(sessionId, createdBy, AI_OPS_QUESTION);
             diagnosisRun = queueDiagnosisRun(createdBy);
             sendContent(emitter, "已创建诊断任务 " + diagnosisRun.getId() + "，正在排队...\n");
-            waitForDiagnosisResult(emitter, diagnosisRun.getId());
+            waitForDiagnosisResult(
+                    emitter,
+                    diagnosisRun.getId(),
+                    sessionId,
+                    createdBy,
+                    assistantAnswerPersisted
+            );
         } catch (AiQuotaExhaustedException e) {
+            persistAiOpsChatResult(sessionId, createdBy, e.getMessage(), assistantAnswerPersisted);
             sendError(emitter, e.getMessage(), AiQuotaExhaustedException.ERROR_CODE);
             emitter.complete();
         } catch (Exception e) {
             logger.error("AI Ops 异步诊断失败", e);
+            persistAiOpsChatResult(sessionId, createdBy, "AI Ops 流程失败: " + e.getMessage(), assistantAnswerPersisted);
             sendError(emitter, "AI Ops 流程失败: " + e);
             emitter.complete();
         }
     }
 
-    private void waitForDiagnosisResult(SseEmitter emitter, UUID diagnosisRunId) {
+    private void waitForDiagnosisResult(
+            SseEmitter emitter,
+            UUID diagnosisRunId,
+            String sessionId,
+            UUID createdBy,
+            AtomicBoolean assistantAnswerPersisted
+    ) {
         long deadline = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(9);
         String lastStatus = null;
         while (System.currentTimeMillis() < deadline) {
             Optional<OpsDiagnosisRun> current = diagnosisPersistenceService.getRun(diagnosisRunId);
             if (current.isEmpty()) {
+                persistAiOpsChatResult(
+                        sessionId,
+                        createdBy,
+                        "诊断任务不存在: " + diagnosisRunId,
+                        assistantAnswerPersisted
+                );
                 sendError(emitter, "诊断任务不存在: " + diagnosisRunId);
                 emitter.complete();
                 return;
@@ -505,15 +531,27 @@ public class ChatController {
                 lastStatus = status;
             }
             if (DiagnosisPersistenceService.STATUS_SUCCESS.equals(status)) {
-                sendFinalReport(emitter, diagnosisRunId);
+                sendFinalReport(emitter, diagnosisRunId, sessionId, createdBy, assistantAnswerPersisted);
                 return;
             }
             if (DiagnosisPersistenceService.STATUS_FAILED.equals(status)) {
+                persistAiOpsChatResult(
+                        sessionId,
+                        createdBy,
+                        "AI Ops 流程失败: " + run.getErrorMessage(),
+                        assistantAnswerPersisted
+                );
                 sendError(emitter, "AI Ops 流程失败: " + run.getErrorMessage());
                 emitter.complete();
                 return;
             }
             if (DiagnosisPersistenceService.STATUS_CANCELED.equals(status)) {
+                persistAiOpsChatResult(
+                        sessionId,
+                        createdBy,
+                        "诊断任务已取消: " + run.getErrorMessage(),
+                        assistantAnswerPersisted
+                );
                 sendError(emitter, "诊断任务已取消: " + run.getErrorMessage());
                 emitter.complete();
                 return;
@@ -521,12 +559,19 @@ public class ChatController {
             if (!DiagnosisPersistenceService.STATUS_QUEUED.equals(status)
                     && !DiagnosisPersistenceService.STATUS_RUNNING.equals(status)
                     && !DiagnosisPersistenceService.STATUS_RETRYING.equals(status)) {
+                persistAiOpsChatResult(
+                        sessionId,
+                        createdBy,
+                        "未知诊断任务状态: " + status,
+                        assistantAnswerPersisted
+                );
                 sendError(emitter, "未知诊断任务状态: " + status);
                 emitter.complete();
                 return;
             }
             sleepBriefly();
         }
+        persistAiOpsChatResult(sessionId, createdBy, "诊断任务等待超时", assistantAnswerPersisted);
         sendError(emitter, "诊断任务等待超时");
         emitter.complete();
     }
@@ -539,24 +584,54 @@ public class ChatController {
         sendContent(emitter, "诊断任务状态: " + status + "\n");
     }
 
-    private void sendFinalReport(SseEmitter emitter, UUID diagnosisRunId) {
+    private void sendFinalReport(
+            SseEmitter emitter,
+            UUID diagnosisRunId,
+            String sessionId,
+            UUID createdBy,
+            AtomicBoolean assistantAnswerPersisted
+    ) {
         Optional<OpsDiagnosisReport> report = diagnosisPersistenceService.getReport(diagnosisRunId);
         if (report.isEmpty() || report.get().getContent() == null || report.get().getContent().isBlank()) {
+            persistAiOpsChatResult(sessionId, createdBy, "诊断任务成功但报告缺失", assistantAnswerPersisted);
             sendError(emitter, "诊断任务成功但报告缺失");
             emitter.complete();
             return;
         }
 
         String finalReportText = report.get().getContent();
+        persistAiOpsChatResult(
+                sessionId,
+                createdBy,
+                "**告警分析报告**\n\n" + finalReportText,
+                assistantAnswerPersisted
+        );
         sendContent(emitter, "\n\n" + "=".repeat(60) + "\n");
         sendContent(emitter, "📋 **告警分析报告**\n\n");
         int chunkSize = 50;
         for (int i = 0; i < finalReportText.length(); i += chunkSize) {
             sendContent(emitter, finalReportText.substring(i, Math.min(i + chunkSize, finalReportText.length())));
+            sleepBetweenReportChunks();
         }
         sendContent(emitter, "\n" + "=".repeat(60) + "\n\n");
         sendMessage(emitter, SseMessage.done());
         emitter.complete();
+    }
+
+    private void persistAiOpsChatResult(
+            String sessionId,
+            UUID createdBy,
+            String answer,
+            AtomicBoolean assistantAnswerPersisted
+    ) {
+        if (!assistantAnswerPersisted.compareAndSet(false, true)) {
+            return;
+        }
+        try {
+            chatSessionService.addAssistantAnswer(sessionId, createdBy, answer);
+        } catch (Exception e) {
+            logger.error("保存 AI Ops 对话结果失败 - SessionId: {}", sessionId, e);
+        }
     }
 
     private void sleepBriefly() {
@@ -565,6 +640,15 @@ public class ChatController {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException("等待诊断任务状态被中断", e);
+        }
+    }
+
+    private void sleepBetweenReportChunks() {
+        try {
+            Thread.sleep(80L);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("发送诊断报告被中断", e);
         }
     }
 

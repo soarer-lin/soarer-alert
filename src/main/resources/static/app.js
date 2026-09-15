@@ -93,6 +93,68 @@ class SoarerAlertAgentApp {
         }
     }
 
+    // 流式内容可能停在未闭合的 Markdown 片段，先做临时兼容渲染。
+    renderStreamingMarkdown(content) {
+        let safeContent = this.neutralizeIncompleteTrailingTable(String(content || ''));
+        safeContent = this.closeUnbalancedInlineMarkdown(safeContent);
+        return this.renderMarkdown(safeContent);
+    }
+
+    neutralizeIncompleteTrailingTable(content) {
+        const lines = content.split('\n');
+        let tableStart = -1;
+        let tableEnd = -1;
+
+        for (let i = 0; i < lines.length; i++) {
+            if (lines[i].trim().startsWith('|')) {
+                if (tableStart < 0) tableStart = i;
+                tableEnd = i;
+            } else if (lines[i].trim() && tableStart >= 0) {
+                tableStart = -1;
+                tableEnd = -1;
+            }
+        }
+
+        if (tableStart < 0) return content;
+        for (let i = tableEnd + 1; i < lines.length; i++) {
+            if (lines[i].trim()) return content;
+        }
+
+        const tableLines = lines.slice(tableStart, tableEnd + 1);
+        const plainLines = tableLines
+            .map(line => {
+                const trimmed = line.trim();
+                if (trimmed.includes('-') && /^[\s|:-]+$/.test(trimmed)) return '';
+                return trimmed
+                    .replace(/^\|/, '')
+                    .replace(/\|$/, '')
+                    .replace(/\s*\|\s*/g, '  ')
+                    .trim();
+            })
+            .filter((line, index, array) => line || (index > 0 && array[index - 1]));
+
+        lines.splice(tableStart, tableLines.length, ...plainLines);
+        return lines.join('\n');
+    }
+
+    closeUnbalancedInlineMarkdown(content) {
+        let safeContent = content;
+        const boldCount = (safeContent.match(/\*\*/g) || []).length;
+        if (boldCount % 2 === 1) {
+            safeContent += '**';
+        }
+
+        const hasUnclosedFence = (/^\s*```/m).test(safeContent)
+            && ((safeContent.match(/^\s*```/gm) || []).length % 2 === 1);
+        if (!hasUnclosedFence) {
+            const inlineCodeCount = (safeContent.match(/`/g) || []).length;
+            if (inlineCodeCount % 2 === 1) {
+                safeContent += '`';
+            }
+        }
+        return safeContent;
+    }
+
     // 系统 UI 不使用表情符号；模型返回内容由各渲染分支自行保留。
     stripEmoji(value) {
         return String(value === null || value === undefined ? '' : value)
@@ -242,7 +304,7 @@ class SoarerAlertAgentApp {
             const content = messageElement.querySelector('.message-content');
             if (content) {
                 content.className = 'message-content';
-                content.innerHTML = this.renderMarkdown(task.partialAnswer);
+                content.innerHTML = this.renderStreamingMarkdown(task.partialAnswer);
                 this.highlightCodeBlocks(content);
             }
         } else {
@@ -901,7 +963,7 @@ class SoarerAlertAgentApp {
         const messageContent = streamingElement.querySelector('.message-content');
         if (messageContent) {
             streamingElement.className = 'message assistant streaming session-busy-placeholder';
-            messageContent.innerHTML = this.renderMarkdown(content);
+            messageContent.innerHTML = this.renderStreamingMarkdown(content);
             this.highlightCodeBlocks(messageContent);
             this.scrollToBottom();
         }
@@ -1686,13 +1748,14 @@ class SoarerAlertAgentApp {
     }
 
     // 发送智能运维请求（SSE 流式模式）
-    async sendAIOpsRequest(loadingMessageElement) {
+    async sendAIOpsRequest(loadingMessageElement, requestSessionId) {
         try {
             const response = await fetch(`${this.apiBaseUrl}/ai_ops`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                }
+                },
+                body: JSON.stringify({ id: requestSessionId })
             });
 
             if (!response.ok) {
@@ -1715,7 +1778,12 @@ class SoarerAlertAgentApp {
                         // 流结束，更新最终内容
                         if (fullResponse) {
                             console.log('AI Ops 流结束，更新最终内容，长度:', fullResponse.length);
-                            this.updateAIOpsMessage(loadingMessageElement, fullResponse, []);
+                            this.updateAIOpsMessage(
+                                loadingMessageElement,
+                                fullResponse,
+                                [],
+                                requestSessionId
+                            );
                         }
                         break;
                     }
@@ -1758,7 +1826,12 @@ class SoarerAlertAgentApp {
                                                 fullResponse += sseMessage.data || '';
                                             } else if (sseMessage.type === 'done') {
                                                 console.log('AI Ops 流完成，最终内容长度:', fullResponse.length);
-                                                this.updateAIOpsMessage(loadingMessageElement, fullResponse, []);
+                                                this.updateAIOpsMessage(
+                                                    loadingMessageElement,
+                                                    fullResponse,
+                                                    [],
+                                                    requestSessionId
+                                                );
                                                 return true;
                                             } else if (sseMessage.type === 'error') {
                                                 const error = new Error(sseMessage.data || '智能运维分析失败');
@@ -1770,9 +1843,11 @@ class SoarerAlertAgentApp {
                                             console.log('[AI Ops SSE] 单个JSON解析失败:', jsonStr);
                                         }
                                     }
-                                    if (loadingMessageElement) {
-                                        this.updateAIOpsStreamContent(loadingMessageElement, fullResponse);
-                                    }
+                                    this.updateAIOpsStreamContent(
+                                        loadingMessageElement,
+                                        fullResponse,
+                                        requestSessionId
+                                    );
                                     return false;
                                 }
                                 return null;
@@ -1788,12 +1863,19 @@ class SoarerAlertAgentApp {
                                     if (sseMessage && sseMessage.type) {
                                         if (sseMessage.type === 'content') {
                                             fullResponse += sseMessage.data || '';
-                                            if (loadingMessageElement) {
-                                                this.updateAIOpsStreamContent(loadingMessageElement, fullResponse);
-                                            }
+                                            this.updateAIOpsStreamContent(
+                                                loadingMessageElement,
+                                                fullResponse,
+                                                requestSessionId
+                                            );
                                         } else if (sseMessage.type === 'done') {
                                             console.log('AI Ops 流完成，最终内容长度:', fullResponse.length);
-                                            this.updateAIOpsMessage(loadingMessageElement, fullResponse, []);
+                                            this.updateAIOpsMessage(
+                                                loadingMessageElement,
+                                                fullResponse,
+                                                [],
+                                                requestSessionId
+                                            );
                                             return;
                                         } else if (sseMessage.type === 'error') {
                                             const error = new Error(sseMessage.data || '智能运维分析失败');
@@ -1802,17 +1884,21 @@ class SoarerAlertAgentApp {
                                         }
                                     } else {
                                         fullResponse += rawData;
-                                        if (loadingMessageElement) {
-                                            this.updateAIOpsStreamContent(loadingMessageElement, fullResponse);
-                                        }
+                                        this.updateAIOpsStreamContent(
+                                            loadingMessageElement,
+                                            fullResponse,
+                                            requestSessionId
+                                        );
                                     }
                                 } catch (e) {
                                     if (e.code || e.message.includes('智能运维')) throw e;
                                     // 非 JSON 格式，直接追加原始数据
                                     fullResponse += rawData;
-                                    if (loadingMessageElement) {
-                                        this.updateAIOpsStreamContent(loadingMessageElement, fullResponse);
-                                    }
+                                    this.updateAIOpsStreamContent(
+                                        loadingMessageElement,
+                                        fullResponse,
+                                        requestSessionId
+                                    );
                                 }
                             }
                         }
@@ -1827,35 +1913,82 @@ class SoarerAlertAgentApp {
     }
 
     // 更新智能运维流式内容（实时显示）
-    updateAIOpsStreamContent(messageElement, content) {
-        if (!messageElement) return;
-        
-        // 添加 aiops-message 类
-        messageElement.classList.add('aiops-message');
-        this.clearThinkingState(messageElement);
-        
-        const messageContentWrapper = messageElement.querySelector('.message-content-wrapper');
-        if (messageContentWrapper) {
-            let messageContent = messageContentWrapper.querySelector('.message-content');
-            if (!messageContent) {
-                messageContent = document.createElement('div');
-                messageContent.className = 'message-content';
-                messageContentWrapper.appendChild(messageContent);
+    updateAIOpsStreamContent(messageElement, content, sessionId) {
+        if (!sessionId) {
+            if (!messageElement) return;
+            messageElement.classList.add('aiops-message');
+            this.clearThinkingState(messageElement);
+            const messageContent = messageElement.querySelector('.message-content');
+            if (messageContent) {
+                messageContent.innerHTML = this.renderStreamingMarkdown(content);
+                this.highlightCodeBlocks(messageContent);
+                this.scrollToBottom();
             }
-            // 流式显示时使用纯文本
-            messageContent.textContent = content;
-            this.scrollToBottom();
+            return;
         }
+
+        this.renderAIOpsStreamingMessage(messageElement, content, sessionId);
+    }
+
+    renderAIOpsStreamingMessage(messageElement, content, sessionId) {
+        if (this.sessionId !== sessionId) {
+            return messageElement;
+        }
+
+        const localTask = this.sessionStreams.get(sessionId);
+        if (localTask) {
+            this.sessionStreams.set(sessionId, {
+                ...localTask,
+                partialAnswer: content
+            });
+        }
+
+        let streamingElement = messageElement;
+        if (!streamingElement || !streamingElement.isConnected) {
+            streamingElement = this.renderBusyPlaceholder(sessionId);
+            if (!streamingElement) {
+                streamingElement = this.addLoadingMessage('', true);
+                streamingElement.dataset.sessionId = sessionId;
+            }
+        }
+
+        streamingElement.dataset.sessionId = sessionId;
+        streamingElement.className = 'message assistant aiops-message streaming session-busy-placeholder';
+        this.clearThinkingState(streamingElement);
+
+        const messageContentWrapper = streamingElement.querySelector('.message-content-wrapper');
+        let messageContent = messageContentWrapper?.querySelector('.message-content');
+        if (!messageContent) {
+            messageContent = document.createElement('div');
+            messageContent.className = 'message-content';
+            messageContentWrapper?.appendChild(messageContent);
+        }
+        messageContent.innerHTML = this.renderStreamingMarkdown(content);
+        this.highlightCodeBlocks(messageContent);
+        this.scrollToBottom();
+        return streamingElement;
     }
 
     // 更新智能运维消息（带折叠详情）
-    updateAIOpsMessage(messageElement, response, details) {
+    updateAIOpsMessage(messageElement, response, details, sessionId) {
         console.log('updateAIOpsMessage 被调用');
         console.log('messageElement:', messageElement);
         console.log('response:', response);
         console.log('response length:', response ? response.length : 0);
         console.log('details:', details);
         
+        if (sessionId && this.sessionId !== sessionId) {
+            return null;
+        }
+
+        if (sessionId && (!messageElement || !messageElement.isConnected)) {
+            messageElement = this.findBusyPlaceholder(sessionId);
+            if (!messageElement) {
+                messageElement = this.addLoadingMessage('', true);
+                messageElement.dataset.sessionId = sessionId;
+            }
+        }
+
         if (!messageElement) {
             // 如果没有传入消息元素，则创建新消息
             console.log('messageElement 为空，创建新消息');
@@ -2026,23 +2159,46 @@ class SoarerAlertAgentApp {
         this.updateUI();
 
         try {
-            await this.sendAIOpsRequest(loadingMessage);
+            await this.sendAIOpsRequest(loadingMessage, aiOpsSessionId);
         } catch (error) {
             console.error('智能运维分析失败:', error);
-            // 更新消息为错误信息
-            if (loadingMessage) {
-                const messageContent = loadingMessage.querySelector('.message-content');
-                if (messageContent) {
-                    messageContent.textContent = error.code === 'AI_QUOTA_EXHAUSTED'
-                        ? error.message
-                        : this.stripEmoji('抱歉，智能运维分析时出现错误：' + error.message);
-                }
-            }
+            this.handleAIOpsError(aiOpsSessionId, error, loadingMessage);
         } finally {
+            // 先让服务端会话进入列表，再移除本地生成占位，避免任务结束后列表项消失。
+            await this.loadChatHistories();
             this.setSessionStreaming(aiOpsSessionId, false);
+            if (this.sessionId === aiOpsSessionId) {
+                await this.loadChatHistory(aiOpsSessionId);
+            }
             this.currentAIOpsMessage = null;
             this.updateUI();
         }
+    }
+
+    handleAIOpsError(sessionId, error, loadingMessage = null) {
+        const errorMessage = error.code === 'AI_QUOTA_EXHAUSTED'
+            ? error.message
+            : this.stripEmoji('抱歉，智能运维分析时出现错误：' + error.message);
+
+        if (this.sessionId !== sessionId) {
+            return;
+        }
+
+        let messageElement = loadingMessage?.isConnected
+            ? loadingMessage
+            : this.findBusyPlaceholder(sessionId);
+        if (!messageElement) {
+            messageElement = this.addLoadingMessage('', true);
+            messageElement.dataset.sessionId = sessionId;
+        }
+
+        this.updateAIOpsMessage(messageElement, errorMessage, [], sessionId);
+        this.currentChatHistory.push({
+            type: 'assistant',
+            content: errorMessage,
+            sequence: this.currentChatHistory.length,
+            timestamp: new Date().toISOString()
+        });
     }
 
     // 显示/隐藏加载遮罩层

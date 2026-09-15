@@ -3,6 +3,7 @@ package com.soarer.alert.service.stream;
 import com.alibaba.cloud.ai.graph.OverAllState;
 import com.soarer.alert.entity.OpsAgentStep;
 import com.soarer.alert.entity.OpsDiagnosisRun;
+import com.soarer.alert.observability.DiagnosisAgentLifecycleHook;
 import com.soarer.alert.service.AiOpsService;
 import com.soarer.alert.service.ChatService;
 import com.soarer.alert.service.observability.OpsMetricsService;
@@ -155,6 +156,7 @@ public class DiagnosisRunStreamWorker {
             MDC.remove("diagnosisRunId");
             MDC.remove("attempt");
             MDC.remove("agentStepId");
+            DiagnosisAgentLifecycleHook.clearThreadState();
         }
     }
 

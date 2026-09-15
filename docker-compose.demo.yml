@@ -1,0 +1,165 @@
+# SoarerAlert demo deployment.
+#
+# - Prometheus alerts and Tencent CLS logs stay in MOCK mode.
+# - No Tencent Cloud credentials are required; only DASHSCOPE_API_KEY and the
+#   initial admin credentials.
+# - Infrastructure ports are bound to 127.0.0.1; only the app port 9900 is
+#   published publicly.
+# - The app image is built from a pre-built jar (see scripts/build-demo.ps1),
+#   so the server never runs Maven.
+#
+# Required environment variables (set them in the current shell, not in files):
+#   DASHSCOPE_API_KEY, AUTH_ADMIN_USERNAME, AUTH_ADMIN_INITIAL_PASSWORD
+#
+# Start:  docker compose -f docker-compose.demo.yml up -d --build --wait
+# Stop:   docker compose -f docker-compose.demo.yml down
+# Reset:  docker compose -f docker-compose.demo.yml down -v
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: soarer-alert-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-superbiz}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-superbiz_local_password}
+      POSTGRES_DB: ${POSTGRES_DB:-soarer_alert}
+      TZ: ${TZ:-Asia/Shanghai}
+    volumes:
+      - soarer-alert-demo-postgres-data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    ports:
+      - "127.0.0.1:15432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-superbiz} -d ${POSTGRES_DB:-soarer_alert}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    mem_limit: 512m
+    restart: unless-stopped
+    networks:
+      - soarer-alert-demo
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: soarer-alert-redis
+    command: ["redis-server", "--appendonly", "yes", "--appendfsync", "everysec"]
+    volumes:
+      - soarer-alert-demo-redis-data:/data
+    ports:
+      - "127.0.0.1:16379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    mem_limit: 192m
+    restart: unless-stopped
+    networks:
+      - soarer-alert-demo
+
+  rustfs:
+    image: rustfs/rustfs:latest
+    container_name: soarer-alert-rustfs
+    command: ["/data"]
+    environment:
+      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-rustfsadmin}
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-rustfsadmin}
+      RUSTFS_CONSOLE_ENABLE: "false"
+      TZ: ${TZ:-Asia/Shanghai}
+    volumes:
+      - soarer-alert-demo-rustfs-data:/data
+    ports:
+      - "127.0.0.1:19000:9000"
+    healthcheck:
+      test: ["CMD", "/usr/bin/nc", "-z", "localhost", "9000"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    mem_limit: 512m
+    restart: unless-stopped
+    networks:
+      - soarer-alert-demo
+
+  prometheus:
+    image: prom/prometheus:v2.53.3
+    container_name: soarer-alert-prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=${PROMETHEUS_RETENTION:-7d}
+    volumes:
+      - ./docker/prometheus/prometheus-demo.yml:/etc/prometheus/prometheus.yml:ro
+      - soarer-alert-demo-prometheus-data:/prometheus
+    ports:
+      - "127.0.0.1:19090:9090"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:9090/-/ready || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    mem_limit: 256m
+    restart: unless-stopped
+    networks:
+      - soarer-alert-demo
+
+  app:
+    build:
+      context: ./image
+    image: soarer-alert-service:demo
+    container_name: soarer-alert-app
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      SERVER_PORT: 9900
+      TZ: ${TZ:-Asia/Shanghai}
+      DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY:?DASHSCOPE_API_KEY is required}
+      DASHSCOPE_CHAT_MODEL: ${DASHSCOPE_CHAT_MODEL:-qwen3.7-flash}
+      DASHSCOPE_EMBEDDING_MODEL: ${DASHSCOPE_EMBEDDING_MODEL:-text-embedding-v3}
+      AUTH_ADMIN_USERNAME: ${AUTH_ADMIN_USERNAME:?AUTH_ADMIN_USERNAME is required}
+      AUTH_ADMIN_INITIAL_PASSWORD: ${AUTH_ADMIN_INITIAL_PASSWORD:?AUTH_ADMIN_INITIAL_PASSWORD is required}
+      AUTH_SESSION_TIMEOUT_MINUTES: ${AUTH_SESSION_TIMEOUT_MINUTES:-720}
+      AUTH_MAX_FAILED_ATTEMPTS: ${AUTH_MAX_FAILED_ATTEMPTS:-5}
+      AUTH_LOCK_DURATION_MINUTES: ${AUTH_LOCK_DURATION_MINUTES:-15}
+      AUTH_SESSION_COOKIE_SECURE: "false"
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-soarer_alert}
+      POSTGRES_USER: ${POSTGRES_USER:-superbiz}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-superbiz_local_password}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      RUSTFS_ENDPOINT: http://rustfs:9000
+      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-rustfsadmin}
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-rustfsadmin}
+      RUSTFS_BUCKET: ${RUSTFS_BUCKET:-soarer-alert}
+      RUSTFS_REGION: ${RUSTFS_REGION:-us-east-1}
+      RUSTFS_AUTO_CREATE_BUCKET: "true"
+      PROMETHEUS_BASE_URL: http://prometheus:9090
+      PROMETHEUS_MOCK_ENABLED: "true"
+      CLS_MOCK_ENABLED: "true"
+      MCP_CLIENT_ENABLED: "false"
+      CLS_UPLOAD_ENABLED: "false"
+    volumes:
+      - soarer-alert-demo-app-uploads:/app/uploads
+    ports:
+      - "${APP_PORT:-9900}:9900"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rustfs:
+        condition: service_healthy
+    mem_limit: 1536m
+    restart: unless-stopped
+    networks:
+      - soarer-alert-demo
+
+volumes:
+  soarer-alert-demo-postgres-data:
+  soarer-alert-demo-redis-data:
+  soarer-alert-demo-rustfs-data:
+  soarer-alert-demo-prometheus-data:
+  soarer-alert-demo-app-uploads:
+
+networks:
+  soarer-alert-demo:
+    name: soarer-alert-demo

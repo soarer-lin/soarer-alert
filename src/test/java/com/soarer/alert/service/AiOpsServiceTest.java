@@ -78,4 +78,40 @@ class AiOpsServiceTest {
         assertTrue(report.isPresent());
         assertTrue(report.get().contains("从消息中恢复的报告"));
     }
+
+    @Test
+    void collectsInitialPrometheusAlertSnapshot() {
+        QueryMetricsTools metricsTools = mock(QueryMetricsTools.class);
+        String snapshot = "{\"success\":true,\"alerts\":[{\"alert_name\":\"HighCPUUsage\"}]}";
+        when(metricsTools.queryPrometheusAlerts()).thenReturn(snapshot);
+        ReflectionTestUtils.setField(aiOpsService, "queryMetricsTools", metricsTools);
+
+        assertEquals(snapshot, aiOpsService.collectInitialAlertSnapshot());
+    }
+
+    @Test
+    void returnsFailureSnapshotWhenPrometheusReturnsNoData() {
+        QueryMetricsTools metricsTools = mock(QueryMetricsTools.class);
+        when(metricsTools.queryPrometheusAlerts()).thenReturn(" ");
+        ReflectionTestUtils.setField(aiOpsService, "queryMetricsTools", metricsTools);
+
+        assertEquals(
+                "{\"success\":false,\"message\":\"Prometheus 告警工具返回空结果\"}",
+                aiOpsService.collectInitialAlertSnapshot()
+        );
+    }
+
+    @Test
+    void returnsEscapedFailureSnapshotWhenPrometheusThrows() {
+        QueryMetricsTools metricsTools = mock(QueryMetricsTools.class);
+        when(metricsTools.queryPrometheusAlerts()).thenThrow(
+                new IllegalStateException("HTTP \"503\"\nPrometheus unavailable")
+        );
+        ReflectionTestUtils.setField(aiOpsService, "queryMetricsTools", metricsTools);
+
+        assertEquals(
+                "{\"success\":false,\"message\":\"Prometheus 告警采集失败: HTTP \\\"503\\\"\\nPrometheus unavailable\"}",
+                aiOpsService.collectInitialAlertSnapshot()
+        );
+    }
 }

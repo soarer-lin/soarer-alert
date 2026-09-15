@@ -303,7 +303,7 @@ $env:CLS_MOCK_ENABLED="false"
 
 ### 1. 环境准备
 
-`scripts/dev-app.ps1` 默认使用 `D:\Java_Project\tools\jdk25`，并自动设置
+`scripts/dev-app.ps1` 默认使用 `JAVA_HOME` 或 PATH 中的 Java，并自动设置
 `SPRING_PROFILES_ACTIVE=local`、PostgreSQL、Redis、RustFS、Prometheus 和 CLS-MCP 的
 宿主机地址。需要在当前 PowerShell 会话提供真实百炼密钥和管理员初始化变量。
 
@@ -321,10 +321,10 @@ $env:AUTH_ADMIN_INITIAL_PASSWORD="Local-Boot-123456"
 也可以手动启动：
 
 ```powershell
-$env:JAVA_HOME="D:\Java_Project\tools\jdk25"
+$env:JAVA_HOME="<path-to-jdk-25>"
 $env:Path="$env:JAVA_HOME\bin;$env:Path"
 $env:SPRING_PROFILES_ACTIVE="local"
-mvn -s maven-settings.local.xml spring-boot:run
+mvn -s .mvn\maven-settings.xml spring-boot:run
 ```
 
 

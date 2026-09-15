@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>登录 SoarerAlertAgent</title>
+    <link rel="icon" href="/favicon.ico" sizes="32x32">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
     <link rel="stylesheet" href="auth.css">
     <link rel="stylesheet" href="theme.css">
     <script src="https://cdn.jsdelivr.net/npm/lucide@0.462.0/dist/umd/lucide.min.js"></script>
@@ -12,11 +16,8 @@
 <main class="auth-shell">
     <section class="auth-card">
         <div class="auth-brand">
-            <span class="auth-brand-mark">S</span>
-            <div>
-                <h1>SoarerAlertAgent</h1>
-                <p>智能告警排查平台</p>
-            </div>
+            <h1 class="auth-brand-title">SoarerAlertAgent</h1>
+            <p>智能告警排查平台</p>
         </div>
 
         <form id="loginForm" autocomplete="on">
@@ -41,7 +42,7 @@
                 <span>登录</span>
             </button>
             <div class="auth-switch-row">
-                <span>还没有账号？请联系管理员获取账号</span>
+                <span id="loginModeHint">还没有账号？请联系管理员获取账号</span>
             </div>
         </form>
     </section>

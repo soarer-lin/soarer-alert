@@ -701,7 +701,6 @@ tbody tr:last-child td {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 12px;
-    animation: staggerIn 0.38s var(--ease-out);
 }
 
 .definition-item {
@@ -730,15 +729,20 @@ tbody tr:last-child td {
 }
 
 .timeline-item {
+    position: relative;
     display: grid;
     grid-template-columns: 34px minmax(0, 1fr);
     gap: 12px;
-    animation: staggerIn 0.42s var(--ease-out);
+}
+
+.timeline-item.timeline-tool {
+    margin-left: 18px;
 }
 
 .timeline-item::before {
     content: "";
     grid-column: 1;
+    grid-row: 1;
     width: 1px;
     height: calc(100% - 14px);
     margin: 16px auto 0;
@@ -748,6 +752,8 @@ tbody tr:last-child td {
 .timeline-marker {
     position: relative;
     z-index: 1;
+    grid-column: 1;
+    grid-row: 1;
     width: 12px;
     height: 12px;
     margin-top: 5px;
@@ -755,6 +761,24 @@ tbody tr:last-child td {
     border-radius: 50%;
     background: var(--ink);
     box-shadow: 0 0 16px rgba(53, 240, 192, 0.35);
+}
+
+.timeline-marker-tool {
+    display: grid;
+    place-items: center;
+    width: 18px;
+    height: 18px;
+    margin-top: 2px;
+    border: 1px solid rgba(53, 240, 192, 0.65);
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--mint);
+    box-shadow: 0 0 12px rgba(53, 240, 192, 0.2);
+}
+
+.timeline-marker-tool svg {
+    width: 10px;
+    height: 10px;
 }
 
 .timeline-item.failed .timeline-marker {
@@ -767,6 +791,8 @@ tbody tr:last-child td {
 }
 
 .timeline-body {
+    grid-column: 2;
+    grid-row: 1;
     min-width: 0;
     padding-bottom: 12px;
     border-bottom: 1px solid rgba(151, 182, 184, 0.09);
@@ -781,15 +807,26 @@ tbody tr:last-child td {
 }
 
 .timeline-title strong {
+    min-width: 0;
     color: var(--text);
+    overflow-wrap: anywhere;
 }
 
-.timeline-text {
+.timeline-meta {
+    white-space: nowrap;
+}
+
+.timeline-summary,
+.timeline-error {
     margin: 4px 0 0;
     color: var(--text-muted);
     line-height: 1.6;
     white-space: normal;
-    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+
+.timeline-error {
+    color: var(--coral);
 }
 
 .timeline-text > :first-child {
@@ -890,7 +927,6 @@ tbody tr:last-child td {
     font-size: 14px;
     line-height: 1.75;
     word-break: break-word;
-    animation: staggerIn 0.38s var(--ease-out);
 }
 
 .report-content.report-plain {

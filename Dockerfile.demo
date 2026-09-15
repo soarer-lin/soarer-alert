@@ -1,0 +1,22 @@
+# Demo runtime image: runs a jar that was built locally by scripts/build-demo.ps1.
+# The build context must contain: Dockerfile, app.jar, healthcheck/HealthCheck.class.
+# This avoids running Maven inside Docker on a low-bandwidth demo server.
+FROM eclipse-temurin:25-jre
+
+RUN groupadd --system soarer \
+    && useradd --system --gid soarer --home /app soarer
+
+WORKDIR /app
+COPY app.jar app.jar
+COPY healthcheck /app/healthcheck
+
+ENV SERVER_PORT=9900 \
+    JAVA_OPTS="-XX:MaxRAMPercentage=75.0"
+
+EXPOSE 9900
+USER soarer
+
+HEALTHCHECK --interval=15s --timeout=5s --start-period=90s --retries=5 \
+    CMD ["java", "-cp", "/app/healthcheck", "HealthCheck"]
+
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app/app.jar"]

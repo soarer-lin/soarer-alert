@@ -1,5 +1,5 @@
 param(
-    [string]$JavaHome = "D:\Java_Project\tools\jdk25",
+    [string]$JavaHome = $env:JAVA_HOME,
     [switch]$SkipTests
 )
 
@@ -7,8 +7,15 @@ $ErrorActionPreference = "Stop"
 $projectRoot = Split-Path -Parent $PSScriptRoot
 Set-Location -LiteralPath $projectRoot
 
+if ([string]::IsNullOrWhiteSpace($JavaHome)) {
+    $javaCommand = Get-Command java -ErrorAction SilentlyContinue
+    if ($javaCommand) {
+        $JavaHome = Split-Path -Parent (Split-Path -Parent $javaCommand.Source)
+    }
+}
+
 if (-not (Test-Path -LiteralPath (Join-Path $JavaHome "bin\java.exe"))) {
-    throw "JDK not found: $JavaHome"
+    throw "JDK not found. Set JAVA_HOME or pass -JavaHome <path-to-jdk>."
 }
 
 if ([string]::IsNullOrWhiteSpace($env:DASHSCOPE_API_KEY)) {
@@ -34,7 +41,13 @@ $env:RUSTFS_ENDPOINT = if ($env:RUSTFS_ENDPOINT) { $env:RUSTFS_ENDPOINT } else {
 $env:PROMETHEUS_BASE_URL = if ($env:PROMETHEUS_BASE_URL) { $env:PROMETHEUS_BASE_URL } else { "http://localhost:19090" }
 $env:CLS_MCP_URL = if ($env:CLS_MCP_URL) { $env:CLS_MCP_URL } else { "http://localhost:13000" }
 
-$goals = @("-s", "maven-settings.local.xml")
+$mavenSettings = if (Test-Path -LiteralPath (Join-Path $projectRoot "maven-settings.local.xml")) {
+    "maven-settings.local.xml"
+} else {
+    ".mvn\maven-settings.xml"
+}
+
+$goals = @("-s", $mavenSettings)
 if ($SkipTests) {
     $goals += "-DskipTests"
 }

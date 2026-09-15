@@ -1,0 +1,21 @@
+# Prometheus configuration for the demo deployment. The app runs as a container
+# on the same Docker network, so we scrape it directly instead of using
+# host.docker.internal. Alert and log data shown in AI Ops stays mocked; this
+# Prometheus only collects the application's own Micrometer metrics.
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: soarer-alert-service
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - soarer-alert-app:9900
+        labels:
+          service: soarer-alert-service
+
+  - job_name: prometheus
+    static_configs:
+      - targets:
+          - localhost:9090

@@ -146,7 +146,7 @@ cls:
     base-retry-backoff-ms: ${CLS_UPLOAD_BASE_RETRY_BACKOFF_MS:200}
     max-retry-backoff-ms: ${CLS_UPLOAD_MAX_RETRY_BACKOFF_MS:5000}
     topics:
-      app: ${CLS_APP_TOPIC_ID:d4fd734b-0451-4567-92a7-e3bd68d9c5d8}
-      host: ${CLS_HOST_TOPIC_ID:d2a46e90-7a30-447e-bf5c-a9113e18ab88}
-      middleware: ${CLS_MIDDLEWARE_TOPIC_ID:2708c9fa-9d93-4f94-9508-659108eb70c7}
-      diagnosis: ${CLS_DIAGNOSIS_TOPIC_ID:e574cb90-10ba-445e-8467-cc99f563ca11}
+      app: ${CLS_APP_TOPIC_ID:}
+      host: ${CLS_HOST_TOPIC_ID:}
+      middleware: ${CLS_MIDDLEWARE_TOPIC_ID:}
+      diagnosis: ${CLS_DIAGNOSIS_TOPIC_ID:}

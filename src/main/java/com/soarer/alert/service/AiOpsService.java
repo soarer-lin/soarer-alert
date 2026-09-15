@@ -8,11 +8,15 @@ import com.soarer.alert.agent.tool.DateTimeTools;
 import com.soarer.alert.agent.tool.InternalDocsTools;
 import com.soarer.alert.agent.tool.QueryLogsTools;
 import com.soarer.alert.agent.tool.QueryMetricsTools;
+import com.soarer.alert.observability.DiagnosisAgentLifecycleHook;
+import com.soarer.alert.service.persistence.DiagnosisPersistenceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.tool.ToolCallback;
+import com.alibaba.cloud.ai.graph.RunnableConfig;
+import com.alibaba.cloud.ai.graph.agent.hook.Hook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,6 +44,9 @@ public class AiOpsService {
     @Autowired(required = false)  // Mock 模式下才注册
     private QueryLogsTools queryLogsTools;
 
+    @Autowired(required = false)
+    private DiagnosisPersistenceService diagnosisPersistenceService;
+
     /**
      * 执行 AI Ops 告警分析流程
      *
@@ -52,15 +59,66 @@ public class AiOpsService {
         logger.info("开始执行 AI Ops 多 Agent 协作流程");
 
         SupervisorAgent supervisorAgent = buildSupervisorAgent(chatModel, toolCallbacks);
+        String alertSnapshot = collectInitialAlertSnapshot();
 
         String taskPrompt = """
                 你是企业级 SRE，接到自动化告警排查任务。
-                请结合可用工具执行规划、执行、再规划的闭环，并最终按照固定模板输出《告警分析报告》。
+                系统已经在进入多 Agent 编排前强制执行了首轮 Prometheus 告警采集。请把下面的首轮采集结果作为本次诊断的事实起点，结合可用工具执行规划、执行、再规划的闭环，并最终按照固定模板输出《告警分析报告》。
+                如果首轮结果显示存在告警，必须围绕这些告警继续收集必要的日志、知识库或其它证据；如果需要其它证据，必须实际调用对应工具，不能只根据报告模板直接编造结论。
                 禁止编造虚假数据；如连续多次查询失败，需在最终报告中诚实说明无法完成的原因。
+
+                ## 首轮 Prometheus 告警采集结果
+                <prometheus-alert-snapshot>
+                %s
+                </prometheus-alert-snapshot>
                 """;
+        taskPrompt = taskPrompt.formatted(alertSnapshot);
 
         logger.info("调用 Supervisor Agent 开始编排...");
-        return supervisorAgent.invoke(taskPrompt);
+        RunnableConfig config = RunnableConfig.builder().build();
+        String runId = org.slf4j.MDC.get("diagnosisRunId");
+        if (runId != null && !runId.isBlank()) {
+            try {
+                DiagnosisAgentLifecycleHook.putExecutionContext(
+                        config,
+                        java.util.UUID.fromString(runId),
+                        taskPrompt
+                );
+            } catch (IllegalArgumentException ignored) {
+                logger.debug("Ignoring invalid diagnosis run ID in Agent context: {}", runId);
+            }
+        }
+        return supervisorAgent.invoke(taskPrompt, config);
+    }
+
+    /**
+     * AI Ops 必须先读取一次当前活动告警，避免模型在没有任何观测数据时直接生成报告。
+     * 该调用发生在诊断 Worker 线程中，因此会沿用 diagnosisRunId 和当前 Supervisor 步骤的审计上下文。
+     */
+    String collectInitialAlertSnapshot() {
+        if (queryMetricsTools == null) {
+            return "{\"success\":false,\"message\":\"Prometheus 告警工具未配置\"}";
+        }
+        try {
+            String snapshot = queryMetricsTools.queryPrometheusAlerts();
+            return snapshot == null || snapshot.isBlank()
+                    ? "{\"success\":false,\"message\":\"Prometheus 告警工具返回空结果\"}"
+                    : snapshot;
+        } catch (RuntimeException exception) {
+            logger.warn("AI Ops 首轮 Prometheus 告警采集失败: {}", exception.getMessage());
+            return "{\"success\":false,\"message\":\"Prometheus 告警采集失败: "
+                    + escapeJson(exception.getMessage()) + "\"}";
+        }
+    }
+
+    private String escapeJson(String value) {
+        if (value == null) {
+            return "unknown";
+        }
+        return value.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\r", "\\r")
+                .replace("\n", "\\n");
     }
 
     /**
@@ -102,42 +160,52 @@ public class AiOpsService {
      * Supervisor 框架要求 mainAgent 的最终 assistant 输出是可路由的 JSON 数组。
      */
     private ReactAgent buildSupervisorRoutingAgent(ChatModel chatModel) {
-        return ReactAgent.builder()
+        var builder = ReactAgent.builder()
                 .name("ai_ops_router")
                 .description("根据 Planner 与 Executor 的最新输出决定下一个 Agent")
                 .model(chatModel)
-                .systemPrompt(buildSupervisorRoutingPrompt())
-                .build();
+                .systemPrompt(buildSupervisorRoutingPrompt());
+        addLifecycleHook(builder);
+        return builder.build();
     }
 
     /**
      * 构建 Planner Agent
      */
     private ReactAgent buildPlannerAgent(ChatModel chatModel, ToolCallback[] toolCallbacks) {
-        return ReactAgent.builder()
+        var builder = ReactAgent.builder()
                 .name("planner_agent")
                 .description("负责拆解告警、规划与再规划步骤")
                 .model(chatModel)
                 .systemPrompt(buildPlannerPrompt())
                 .methodTools(buildMethodToolsArray())
                 .tools(toolCallbacks)
-                .outputKey("planner_plan")
-                .build();
+                .outputKey("planner_plan");
+        addLifecycleHook(builder);
+        return builder.build();
     }
 
     /**
      * 构建 Executor Agent
      */
     private ReactAgent buildExecutorAgent(ChatModel chatModel, ToolCallback[] toolCallbacks) {
-        return ReactAgent.builder()
+        var builder = ReactAgent.builder()
                 .name("executor_agent")
                 .description("负责执行 Planner 的首个步骤并及时反馈")
                 .model(chatModel)
                 .systemPrompt(buildExecutorPrompt())
                 .methodTools(buildMethodToolsArray())
                 .tools(toolCallbacks)
-                .outputKey("executor_feedback")
-                .build();
+                .outputKey("executor_feedback");
+        addLifecycleHook(builder);
+        return builder.build();
+    }
+
+    private void addLifecycleHook(com.alibaba.cloud.ai.graph.agent.Builder builder) {
+        if (diagnosisPersistenceService != null) {
+            Hook hook = new DiagnosisAgentLifecycleHook(diagnosisPersistenceService);
+            builder.hooks(hook);
+        }
     }
 
     /**

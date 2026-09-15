@@ -43,6 +43,12 @@ public class SecurityConfig {
                                     "/auth.css",
                                     "/theme.css",
                                     "/theme.js",
+                                    "/favicon.ico",
+                                    "/favicon.svg",
+                                    "/apple-touch-icon.png",
+                                    "/icon-192.png",
+                                    "/icon-512.png",
+                                    "/site.webmanifest",
                                     "/actuator/health/**",
                                     "/actuator/prometheus"
                             )
