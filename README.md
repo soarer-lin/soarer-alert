@@ -1,5 +1,7 @@
 # SoarerAlert
 
+[![CI](https://github.com/soarer-lin/soarer-alert/actions/workflows/ci.yml/badge.svg)](https://github.com/soarer-lin/soarer-alert/actions/workflows/ci.yml)
+
 智能告警排查平台
 
 SoarerAlert 是一套运维 OnCall 智能告警排查平台，内置自研 SoarerAlertAgent 大模型智能体。支持多源告警聚合、告警降噪、故障根因智能排查、值班轮换管理、工单辅助生成，大幅提升运维故障排查与响应效率。
