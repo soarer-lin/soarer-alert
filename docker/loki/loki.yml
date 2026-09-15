@@ -1,3 +1,4 @@
+# Loki 日志存储服务配置。
 auth_enabled: false
 
 server:

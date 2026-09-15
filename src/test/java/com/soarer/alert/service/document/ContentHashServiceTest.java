@@ -6,6 +6,9 @@ import java.nio.charset.StandardCharsets;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * 验证 ContentHashService 的行为。
+ */
 class ContentHashServiceTest {
 
     private final ContentHashService service = new ContentHashService();

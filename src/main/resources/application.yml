@@ -1,3 +1,4 @@
+# SoarerAlert 主配置文件。
 spring:
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:local}

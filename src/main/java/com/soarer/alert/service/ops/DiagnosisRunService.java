@@ -7,6 +7,9 @@ import com.soarer.alert.service.stream.DiagnosisRunStreamPublisher;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 
+/**
+ * 诊断任务编排服务。
+ */
 @Service
 public class DiagnosisRunService {
 

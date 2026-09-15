@@ -6,6 +6,9 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
 import org.springframework.util.PlaceholderResolutionException;
 
+/**
+ * 生产环境关键配置校验。
+ */
 @Configuration
 @Profile("prod")
 public class ProductionConfigurationGuard {

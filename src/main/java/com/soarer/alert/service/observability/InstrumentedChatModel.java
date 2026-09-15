@@ -8,6 +8,9 @@ import org.springframework.ai.chat.prompt.Prompt;
 import reactor.core.publisher.SignalType;
 import reactor.core.publisher.Flux;
 
+/**
+ * 带指标采集的聊天模型装饰器。
+ */
 public final class InstrumentedChatModel implements ChatModel {
 
     private final ChatModel delegate;

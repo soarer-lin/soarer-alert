@@ -10,6 +10,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * 诊断任务 Redis Stream 发布器。
+ */
 @Service
 public class DiagnosisRunStreamPublisher {
 

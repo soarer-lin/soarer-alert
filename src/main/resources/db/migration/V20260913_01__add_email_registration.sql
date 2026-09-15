@@ -1,3 +1,4 @@
+-- 历史迁移：添加邮箱注册字段。
 ALTER TABLE auth_user
     ALTER COLUMN username TYPE VARCHAR(254);
 

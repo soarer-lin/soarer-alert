@@ -1,3 +1,4 @@
+# 生产环境 Prometheus 配置。
 global:
   scrape_interval: 15s
   evaluation_interval: 15s

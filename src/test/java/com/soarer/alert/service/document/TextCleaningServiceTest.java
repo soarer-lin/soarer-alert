@@ -4,6 +4,9 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * 验证 TextCleaningService 的行为。
+ */
 class TextCleaningServiceTest {
 
     private final TextCleaningService service = new TextCleaningService();

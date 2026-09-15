@@ -15,6 +15,9 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * 验证 DiagnosisWebSocketAuthInterceptor 的行为。
+ */
 class DiagnosisWebSocketAuthInterceptorTest {
 
     private final DiagnosisWebSocketAuthInterceptor interceptor = new DiagnosisWebSocketAuthInterceptor();

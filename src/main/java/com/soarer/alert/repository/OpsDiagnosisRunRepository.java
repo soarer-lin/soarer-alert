@@ -7,6 +7,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;
 
+/**
+ * 访问 OpsDiagnosisRun 数据的 Spring Data 接口。
+ */
 public interface OpsDiagnosisRunRepository extends JpaRepository<OpsDiagnosisRun, UUID> {
     Page<OpsDiagnosisRun> findByStatus(String status, Pageable pageable);
 

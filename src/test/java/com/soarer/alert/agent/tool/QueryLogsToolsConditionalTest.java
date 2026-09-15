@@ -5,6 +5,9 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * 验证 QueryLogsToolsConditional 的行为。
+ */
 class QueryLogsToolsConditionalTest {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()

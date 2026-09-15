@@ -3,6 +3,9 @@ package com.soarer.alert.dto.ops;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * ToolInvocationView 数据传输对象。
+ */
 public record ToolInvocationView(
         UUID id,
         UUID diagnosisRunId,

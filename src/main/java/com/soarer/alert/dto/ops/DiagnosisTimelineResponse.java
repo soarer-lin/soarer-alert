@@ -3,6 +3,9 @@ package com.soarer.alert.dto.ops;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * DiagnosisTimelineResponse 数据传输对象。
+ */
 public record DiagnosisTimelineResponse(
         UUID diagnosisRunId,
         List<AgentStepView> steps,

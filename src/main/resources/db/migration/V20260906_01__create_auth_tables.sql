@@ -1,3 +1,4 @@
+-- 创建认证相关表的数据库迁移。
 CREATE TABLE auth_user (
     id UUID PRIMARY KEY DEFAULT public.uuid_generate_v4(),
     username VARCHAR(64) NOT NULL,

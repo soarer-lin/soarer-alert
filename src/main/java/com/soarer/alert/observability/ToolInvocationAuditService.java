@@ -15,6 +15,9 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
+ * ToolInvocationAuditService 可观测性组件。
+ */
+/**
  * Records tool calls for both local @Tool methods and external MCP callbacks.
  */
 @Service

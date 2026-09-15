@@ -22,6 +22,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+/**
+ * 验证 ObjectStorageService 的行为。
+ */
 class ObjectStorageServiceTest {
 
     private S3Client s3Client;

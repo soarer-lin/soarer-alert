@@ -1,3 +1,4 @@
+# 构建演示环境压缩包的 PowerShell 脚本。
 param(
     [string]$JavaHome = $env:JAVA_HOME,
     [switch]$SkipPackage

@@ -21,6 +21,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+/**
+ * 验证 ToolInvocationObservabilityAspect 的行为。
+ */
 class ToolInvocationObservabilityAspectTest {
 
     private final MeterRegistry registry = new SimpleMeterRegistry();

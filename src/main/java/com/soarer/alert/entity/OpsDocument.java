@@ -15,6 +15,9 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * OpsDocument JPA 实体。
+ */
 @Getter
 @Setter
 @Entity

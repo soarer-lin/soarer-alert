@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * ObjectStoreHealthController REST 控制器。
+ */
 @RestController
 @RequestMapping("/object-store")
 public class ObjectStoreHealthController {

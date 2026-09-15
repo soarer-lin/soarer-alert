@@ -4,6 +4,9 @@ import lombok.Getter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * FileUploadConfig Spring 配置。
+ */
 @Getter
 @Configuration
 @ConfigurationProperties(prefix = "file.upload")

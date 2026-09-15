@@ -10,6 +10,9 @@ import software.amazon.awssdk.services.s3.S3Client;
 
 import java.net.URI;
 
+/**
+ * S3 兼容对象存储客户端配置。
+ */
 @Configuration
 public class ObjectStorageConfig {
 

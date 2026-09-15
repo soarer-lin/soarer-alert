@@ -23,6 +23,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+/**
+ * 验证 InstrumentedToolCallback 的行为。
+ */
 class InstrumentedToolCallbackTest {
 
     private final SimpleMeterRegistry registry = new SimpleMeterRegistry();

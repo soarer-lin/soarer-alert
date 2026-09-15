@@ -1,3 +1,4 @@
+# SoarerAlert 生产镜像构建文件。
 # syntax=docker/dockerfile:1
 FROM maven:3.9-eclipse-temurin-25 AS build
 WORKDIR /workspace

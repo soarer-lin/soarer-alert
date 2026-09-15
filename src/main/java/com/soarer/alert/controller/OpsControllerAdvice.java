@@ -12,6 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+/**
+ * 运维接口全局异常处理。
+ */
 @RestControllerAdvice
 public class OpsControllerAdvice {
 

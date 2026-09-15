@@ -1,3 +1,4 @@
+# 演示环境 Prometheus 配置。
 # Prometheus configuration for the demo deployment. The app runs as a container
 # on the same Docker network, so we scrape it directly instead of using
 # host.docker.internal. Alert and log data shown in AI Ops stays mocked; this

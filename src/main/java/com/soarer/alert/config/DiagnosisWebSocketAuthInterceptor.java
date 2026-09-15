@@ -11,6 +11,9 @@ import org.springframework.web.socket.server.HandshakeInterceptor;
 
 import java.util.Map;
 
+/**
+ * 诊断 WebSocket 握手认证拦截器。
+ */
 @Component
 public class DiagnosisWebSocketAuthInterceptor implements HandshakeInterceptor {
 

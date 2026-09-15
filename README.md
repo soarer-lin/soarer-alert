@@ -2,8 +2,7 @@
 
 [![CI](https://github.com/soarer-lin/soarer-alert/actions/workflows/ci.yml/badge.svg)](https://github.com/soarer-lin/soarer-alert/actions/workflows/ci.yml)
 
-
-SoarerAlert 是一套运维智能告警排查平台，内置自研 SoarerAlertAgent 大模型智能体。支持多源告警聚合、告警降噪、故障根因智能排查、值班轮换管理、工单辅助生成，大幅提升运维故障排查与响应效率。
+SoarerAlert 是一套运维智能告警排查平台，内置自研 SoarerAlertAgent 大模型智能体。支持多源告警聚合、告警降噪、故障根因智能排查、工单辅助生成，大幅提升运维故障排查与响应效率。
 
 ## 📖 项目简介
 
@@ -358,6 +357,15 @@ curl http://localhost:9900/object-store/health
 
 Milvus 中的历史向量不做直接迁移。迁移到 pgvector 后，请重新上传或重新索引原始运维文档，确保使用同一个 Embedding 模型、1024 维向量和新的 metadata 结构。
 
+## 🧭 Roadmap
+
+以下是后续计划增强的能力，当前版本尚未完整实现：
+
+- 值班轮换管理：主备值班、排班、交接记录
+- 告警通知路由与升级策略
+- 多渠道通知集成
+- 工单系统对接
+
 ## 📚 深入文档
 
 | 文档 | 内容 |
@@ -369,4 +377,4 @@ Milvus 中的历史向量不做直接迁移。迁移到 pgvector 后，请重新
 
 **版本**: v1.0.0  
 **作者**: soarer-lin  
-**许可证**: MIT
+**许可证**: Apache License 2.0

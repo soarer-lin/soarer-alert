@@ -20,6 +20,9 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * 腾讯云 CLS 日志事件上传器。
+ */
 @Service
 @ConditionalOnProperty(prefix = "cls.upload", name = "enabled", havingValue = "true")
 public class ClsLogEventUploader {

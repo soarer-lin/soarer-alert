@@ -20,6 +20,9 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * 认证用户管理接口。
+ */
 @RestController
 @RequestMapping("/api/admin")
 public class AuthAdminController {

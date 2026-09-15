@@ -10,6 +10,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 /**
+ * MCP 会话保活服务。
+ */
+/**
  * Keeps the SSE session used by the Tencent CLS MCP server active.
  */
 @Service

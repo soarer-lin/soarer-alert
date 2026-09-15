@@ -1,3 +1,4 @@
+-- 历史迁移：收敛认证角色。
 UPDATE auth_user
 SET role = 'OPS',
     updated_at = now()

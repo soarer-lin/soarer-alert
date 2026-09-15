@@ -9,6 +9,9 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+/**
+ * 验证 DocumentIndexTask 的行为。
+ */
 class DocumentIndexTaskTest {
 
     @Test

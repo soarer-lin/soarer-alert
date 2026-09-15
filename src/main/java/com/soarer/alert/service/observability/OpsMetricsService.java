@@ -7,6 +7,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 
+/**
+ * 运维指标服务。
+ */
 @Service
 public class OpsMetricsService {
 

@@ -10,6 +10,9 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+/**
+ * Redis Stream 指标绑定器。
+ */
 @Component
 public class RedisStreamMetricsBinder implements MeterBinder {
 

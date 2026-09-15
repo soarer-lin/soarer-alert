@@ -6,6 +6,9 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * 验证 OpsMetricsService 的行为。
+ */
 class OpsMetricsServiceTest {
 
     private final MeterRegistry registry = new SimpleMeterRegistry();

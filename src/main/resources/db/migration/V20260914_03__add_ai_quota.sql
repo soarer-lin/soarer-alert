@@ -1,3 +1,4 @@
+-- 历史迁移：添加 AI 配额字段。
 ALTER TABLE auth_user
     ADD COLUMN ai_quota_limit INT NULL,
     ADD COLUMN ai_quota_used INT NOT NULL DEFAULT 0,

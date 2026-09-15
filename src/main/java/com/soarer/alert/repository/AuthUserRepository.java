@@ -11,6 +11,9 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * 访问 AuthUser 数据的 Spring Data 接口。
+ */
 public interface AuthUserRepository extends JpaRepository<AuthUser, UUID> {
     Optional<AuthUser> findByUsername(String username);
 

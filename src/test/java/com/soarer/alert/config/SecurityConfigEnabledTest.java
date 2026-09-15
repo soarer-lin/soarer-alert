@@ -13,6 +13,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * 验证 SecurityConfigEnabled 的行为。
+ */
 @WebMvcTest(controllers = SecurityConfigEnabledTest.TestController.class)
 @Import({SecurityConfig.class, ApiAuthProperties.class, CorsProperties.class,
         SecurityConfigEnabledTest.TestController.class})

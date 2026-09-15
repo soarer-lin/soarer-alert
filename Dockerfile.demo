@@ -1,3 +1,4 @@
+# SoarerAlert 演示镜像构建文件。
 # Demo runtime image: runs a jar that was built locally by scripts/build-demo.ps1.
 # The build context must contain: Dockerfile, app.jar, healthcheck/HealthCheck.class.
 # This avoids running Maven inside Docker on a low-bandwidth demo server.

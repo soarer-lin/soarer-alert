@@ -21,6 +21,9 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Spring Security 认证与授权配置。
+ */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {

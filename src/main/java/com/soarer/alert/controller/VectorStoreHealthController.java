@@ -10,6 +10,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
+ * VectorStoreHealthController REST 控制器。
+ */
+/**
  * Checks the PostgreSQL vector store used by the knowledge index.
  */
 @RestController

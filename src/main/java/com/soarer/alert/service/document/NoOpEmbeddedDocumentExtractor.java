@@ -6,6 +6,9 @@ import org.xml.sax.ContentHandler;
 
 import java.io.InputStream;
 
+/**
+ * NoOpEmbeddedDocumentExtractor 业务服务。
+ */
 public class NoOpEmbeddedDocumentExtractor implements EmbeddedDocumentExtractor {
 
     @Override

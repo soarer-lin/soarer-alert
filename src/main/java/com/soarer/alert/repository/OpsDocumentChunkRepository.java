@@ -9,6 +9,9 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * 访问 OpsDocumentChunk 数据的 Spring Data 接口。
+ */
 public interface OpsDocumentChunkRepository extends JpaRepository<OpsDocumentChunk, UUID> {
     List<OpsDocumentChunk> findByDocumentIdOrderByChunkIndexAsc(UUID documentId);
 

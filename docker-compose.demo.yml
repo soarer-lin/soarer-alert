@@ -1,3 +1,4 @@
+# 演示环境容器编排，默认使用 Mock 数据，便于快速展示。
 # SoarerAlert demo deployment.
 #
 # - Prometheus alerts and Tencent CLS logs stay in MOCK mode.

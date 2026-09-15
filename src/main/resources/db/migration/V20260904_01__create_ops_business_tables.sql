@@ -1,3 +1,4 @@
+-- 创建运维业务表的数据库迁移。
 CREATE TABLE ops_document (
     id UUID PRIMARY KEY DEFAULT public.uuid_generate_v4(),
     file_name TEXT NOT NULL,

@@ -3,6 +3,9 @@ package com.soarer.alert.service.stream;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * DocumentIndexTask 业务服务。
+ */
 public record DocumentIndexTask(UUID documentId, String contentHash, int attempt) {
 
     public static DocumentIndexTask from(Map<String, String> fields) {

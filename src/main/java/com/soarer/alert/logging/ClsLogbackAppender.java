@@ -8,6 +8,9 @@ import com.soarer.alert.service.cls.ClsLogEventUploader;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * Logback 腾讯云 CLS Appender。
+ */
 public class ClsLogbackAppender extends AppenderBase<ILoggingEvent> {
 
     private final ClsLogEventUploader uploader;

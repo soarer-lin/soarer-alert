@@ -10,6 +10,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * 文档索引 Redis Stream 发布器。
+ */
 @Service
 public class DocumentIndexStreamPublisher {
 

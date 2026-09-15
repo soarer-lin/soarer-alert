@@ -7,6 +7,9 @@ import com.soarer.alert.service.observability.OpsMetricsService;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.stereotype.Component;
 
+/**
+ * ToolInvocationObservabilityAspect 可观测性组件。
+ */
 @Aspect
 @Component
 public class ToolInvocationObservabilityAspect {

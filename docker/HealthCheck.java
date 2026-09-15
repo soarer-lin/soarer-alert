@@ -4,6 +4,9 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 
+/**
+ * 容器健康检查入口，用于探测应用进程是否可用。
+ */
 public final class HealthCheck {
     private HealthCheck() {
     }

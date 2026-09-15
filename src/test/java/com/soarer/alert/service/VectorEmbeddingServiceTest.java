@@ -8,6 +8,9 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+/**
+ * 验证 VectorEmbeddingService 的行为。
+ */
 class VectorEmbeddingServiceTest {
 
     @Test

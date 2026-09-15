@@ -8,6 +8,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * 访问 OpsDocument 数据的 Spring Data 接口。
+ */
 public interface OpsDocumentRepository extends JpaRepository<OpsDocument, UUID> {
     Optional<OpsDocument> findByContentHash(String contentHash);
 

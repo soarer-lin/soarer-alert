@@ -6,6 +6,9 @@ import org.springframework.context.annotation.Configuration;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * CorsProperties Spring 配置。
+ */
 @Configuration
 @ConfigurationProperties(prefix = "app.cors")
 public class CorsProperties {

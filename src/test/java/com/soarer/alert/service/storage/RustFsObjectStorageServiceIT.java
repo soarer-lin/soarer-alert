@@ -11,6 +11,9 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * 验证 RustFsObjectStorageService 的行为。
+ */
 @EnabledIfSystemProperty(named = "rustfs.integration", matches = "true")
 class RustFsObjectStorageServiceIT {
 

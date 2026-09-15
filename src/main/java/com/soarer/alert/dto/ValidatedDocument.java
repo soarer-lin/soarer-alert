@@ -3,6 +3,9 @@ package com.soarer.alert.dto;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * ValidatedDocument 数据传输对象。
+ */
 @Getter
 @Setter
 public class ValidatedDocument {

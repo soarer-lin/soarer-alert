@@ -6,6 +6,9 @@ import org.springframework.context.annotation.Configuration;
 
 import java.time.Duration;
 
+/**
+ * ObjectStorageConfigProperties Spring 配置。
+ */
 @Getter
 @Configuration
 @ConfigurationProperties(prefix = "app.storage")

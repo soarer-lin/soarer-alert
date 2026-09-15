@@ -16,6 +16,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+/**
+ * 验证 RedisStreamMetricsBinder 的行为。
+ */
 class RedisStreamMetricsBinderTest {
 
     private final StringRedisTemplate redisTemplate = mock(StringRedisTemplate.class);

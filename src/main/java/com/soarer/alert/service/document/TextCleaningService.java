@@ -5,6 +5,9 @@ import org.springframework.stereotype.Service;
 import java.util.regex.Pattern;
 
 /**
+ * 文档文本清洗服务。
+ */
+/**
  * Cleans text extracted from operations documents while preserving commands,
  * configuration, code, stack traces, URLs, tables, and log samples.
  */

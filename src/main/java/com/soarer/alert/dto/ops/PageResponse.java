@@ -2,6 +2,9 @@ package com.soarer.alert.dto.ops;
 
 import java.util.List;
 
+/**
+ * PageResponse 数据传输对象。
+ */
 public record PageResponse<T>(
         List<T> content,
         int page,

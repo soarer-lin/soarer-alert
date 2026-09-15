@@ -3,6 +3,9 @@ package com.soarer.alert.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * ApiAuthProperties Spring 配置。
+ */
 @Configuration
 @ConfigurationProperties(prefix = "app.auth")
 public class ApiAuthProperties {

@@ -19,6 +19,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * 验证 DiagnosisAgentLifecycleHook 的行为。
+ */
 class DiagnosisAgentLifecycleHookTest {
 
     private final DiagnosisPersistenceService persistenceService =

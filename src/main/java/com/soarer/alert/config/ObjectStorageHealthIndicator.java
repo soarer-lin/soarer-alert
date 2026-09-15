@@ -6,6 +6,9 @@ import org.springframework.boot.health.contributor.Health;
 import org.springframework.boot.health.contributor.HealthIndicator;
 import org.springframework.stereotype.Component;
 
+/**
+ * ObjectStorageHealthIndicator Spring 配置。
+ */
 @Component
 public class ObjectStorageHealthIndicator implements HealthIndicator {
 

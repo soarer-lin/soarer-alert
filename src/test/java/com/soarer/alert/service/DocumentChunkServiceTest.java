@@ -9,6 +9,9 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * 验证 DocumentChunkService 的行为。
+ */
 class DocumentChunkServiceTest {
 
     private DocumentChunkService service;

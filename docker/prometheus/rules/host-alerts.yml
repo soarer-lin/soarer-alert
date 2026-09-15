@@ -1,3 +1,4 @@
+# 主机资源告警规则。
 groups:
   - name: linux-host-alerts
     rules:

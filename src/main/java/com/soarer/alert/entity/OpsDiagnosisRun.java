@@ -15,6 +15,9 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * OpsDiagnosisRun JPA 实体。
+ */
 @Getter
 @Setter
 @Entity

@@ -20,6 +20,9 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+/**
+ * 验证 DocumentPersistenceService 的行为。
+ */
 class DocumentPersistenceServiceTest {
 
     private final OpsDocumentRepository documentRepository = mock(OpsDocumentRepository.class);

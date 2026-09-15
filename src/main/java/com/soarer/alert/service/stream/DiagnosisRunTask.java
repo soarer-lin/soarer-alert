@@ -3,6 +3,9 @@ package com.soarer.alert.service.stream;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * DiagnosisRunTask 业务服务。
+ */
 record DiagnosisRunTask(UUID diagnosisRunId, int attempt) {
 
     static DiagnosisRunTask from(Map<String, String> fields) {

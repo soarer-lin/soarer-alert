@@ -9,6 +9,9 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * AuthUserDetails 认证适配组件。
+ */
 public record AuthUserDetails(AuthUser user) implements UserDetails {
 
     @Override

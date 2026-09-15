@@ -1,3 +1,4 @@
+# Windows 主机 Exporter 抓取目标。
 # Add one target per Windows host. Replace host.docker.internal:9182 with the
 # real host or server IP when moving beyond the local demo machine.
 - targets:

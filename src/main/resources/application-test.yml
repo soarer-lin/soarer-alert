@@ -1,3 +1,4 @@
+# 自动化测试配置，使用隔离的 Mock 依赖。
 spring:
   ai:
     dashscope:

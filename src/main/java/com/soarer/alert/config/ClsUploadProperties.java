@@ -5,6 +5,9 @@ import org.springframework.context.annotation.Configuration;
 
 import java.net.InetAddress;
 
+/**
+ * ClsUploadProperties Spring 配置。
+ */
 @Configuration
 @ConfigurationProperties(prefix = "cls.upload")
 public class ClsUploadProperties {

@@ -1,3 +1,4 @@
+# 生产环境容器编排，需要在部署环境中注入真实密钥。
 services:
   postgres:
     image: pgvector/pgvector:pg16

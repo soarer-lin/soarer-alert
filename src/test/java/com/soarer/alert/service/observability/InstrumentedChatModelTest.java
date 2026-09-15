@@ -12,6 +12,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+/**
+ * 验证 InstrumentedChatModel 的行为。
+ */
 class InstrumentedChatModelTest {
 
     private final MeterRegistry registry = new SimpleMeterRegistry();

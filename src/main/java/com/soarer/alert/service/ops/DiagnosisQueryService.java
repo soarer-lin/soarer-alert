@@ -36,6 +36,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * 诊断数据查询服务。
+ */
 @Service
 public class DiagnosisQueryService {
 

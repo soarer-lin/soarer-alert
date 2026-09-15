@@ -1,3 +1,4 @@
+# 本地启动 SoarerAlert 依赖服务的 PowerShell 脚本。
 param(
     [switch]$WithMcp
 )

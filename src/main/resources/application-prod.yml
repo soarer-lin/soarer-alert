@@ -1,3 +1,4 @@
+# 生产环境配置，部署时必须提供安全的外部配置。
 spring:
   datasource:
     url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:soarer_alert}

@@ -18,6 +18,9 @@ import java.time.temporal.ChronoUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * 验证 QueryMetricsTools 的行为。
+ */
 class QueryMetricsToolsTest {
 
     private QueryMetricsTools tools;

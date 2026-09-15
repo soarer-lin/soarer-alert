@@ -5,6 +5,9 @@ import org.springframework.mock.env.MockEnvironment;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+/**
+ * 验证 ProductionConfigurationGuard 的行为。
+ */
 class ProductionConfigurationGuardTest {
 
     @Test

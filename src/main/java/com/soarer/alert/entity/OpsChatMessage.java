@@ -14,6 +14,9 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * OpsChatMessage JPA 实体。
+ */
 @Getter
 @Setter
 @Entity

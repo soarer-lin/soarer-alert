@@ -5,6 +5,9 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * 验证 ClsLogEventUploader 的行为。
+ */
 class ClsLogEventUploaderTest {
 
     @Test

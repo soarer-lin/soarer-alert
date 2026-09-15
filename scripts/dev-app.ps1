@@ -1,3 +1,4 @@
+# 本地启动 SoarerAlert 应用服务的 PowerShell 脚本。
 param(
     [string]$JavaHome = $env:JAVA_HOME,
     [switch]$SkipTests

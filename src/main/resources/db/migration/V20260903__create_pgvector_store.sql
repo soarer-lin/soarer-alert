@@ -1,3 +1,4 @@
+-- 创建 pgvector 向量存储表的数据库迁移。
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'hstore') THEN

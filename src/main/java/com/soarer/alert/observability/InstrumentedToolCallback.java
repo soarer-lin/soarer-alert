@@ -6,6 +6,9 @@ import org.springframework.ai.tool.definition.ToolDefinition;
 import org.springframework.ai.tool.metadata.ToolMetadata;
 
 /**
+ * 带指标采集的工具回调装饰器。
+ */
+/**
  * Wraps MCP tool callbacks so their invocations are measured and persisted.
  */
 public class InstrumentedToolCallback implements ToolCallback {

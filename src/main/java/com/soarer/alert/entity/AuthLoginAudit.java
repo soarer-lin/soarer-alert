@@ -13,6 +13,9 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * AuthLoginAudit JPA 实体。
+ */
 @Getter
 @Setter
 @Entity

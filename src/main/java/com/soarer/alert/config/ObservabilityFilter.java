@@ -14,6 +14,9 @@ import java.io.IOException;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
+/**
+ * 请求观测过滤器，为链路日志补充上下文。
+ */
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class ObservabilityFilter extends OncePerRequestFilter {

@@ -9,6 +9,9 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * 访问 OpsChatMessage 数据的 Spring Data 接口。
+ */
 public interface OpsChatMessageRepository extends JpaRepository<OpsChatMessage, java.util.UUID> {
     List<OpsChatMessage> findBySessionIdOrderBySequenceAsc(String sessionId);
 

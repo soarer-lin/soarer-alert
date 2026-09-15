@@ -17,6 +17,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+/**
+ * 验证 DiagnosisRunStreamPublisher 的行为。
+ */
 class DiagnosisRunStreamPublisherTest {
 
     private static final String STREAM_KEY = "soarer:diagnosis:stream";

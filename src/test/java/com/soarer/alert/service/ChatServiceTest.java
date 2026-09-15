@@ -15,6 +15,9 @@ import org.springframework.test.util.ReflectionTestUtils;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
+/**
+ * 验证 ChatService 的行为。
+ */
 class ChatServiceTest {
 
     @Test
