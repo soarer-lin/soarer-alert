@@ -51,7 +51,10 @@
     }
 
     function websocketUrl(path) {
-        return new URL(path, window.location.origin).toString();
+        const url = new URL(path, window.location.origin);
+        // WebSocket 必须使用 ws/wss 协议，不能直接复用 http/https。
+        url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+        return url.toString();
     }
 
     async function getCurrentUser() {
