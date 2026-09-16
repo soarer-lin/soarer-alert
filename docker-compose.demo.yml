@@ -4,13 +4,17 @@
 # - Prometheus alerts and Tencent CLS logs stay in MOCK mode.
 # - No Tencent Cloud credentials are required; only DASHSCOPE_API_KEY and the
 #   initial admin credentials.
-# - Infrastructure ports are bound to 127.0.0.1; only the app port 9900 is
-#   published publicly.
+# - All host ports are bound to 127.0.0.1 by default. Put Nginx in front of
+#   the app for public HTTPS access, or set APP_BIND=0.0.0.0 for direct access.
 # - The app image is built from a pre-built jar (see scripts/build-demo.ps1),
 #   so the server never runs Maven.
 #
-# Required environment variables (set them in the current shell, not in files):
+# Required environment variables (set them in .env or the current shell):
 #   DASHSCOPE_API_KEY, AUTH_ADMIN_USERNAME, AUTH_ADMIN_INITIAL_PASSWORD
+#
+# Optional reverse-proxy settings:
+#   APP_BIND, AUTH_SESSION_COOKIE_SECURE, SERVER_FORWARD_HEADERS_STRATEGY,
+#   CORS_ALLOWED_ORIGINS
 #
 # Start:  docker compose -f docker-compose.demo.yml up -d --build --wait
 # Stop:   docker compose -f docker-compose.demo.yml down
@@ -119,7 +123,9 @@ services:
       AUTH_SESSION_TIMEOUT_MINUTES: ${AUTH_SESSION_TIMEOUT_MINUTES:-720}
       AUTH_MAX_FAILED_ATTEMPTS: ${AUTH_MAX_FAILED_ATTEMPTS:-5}
       AUTH_LOCK_DURATION_MINUTES: ${AUTH_LOCK_DURATION_MINUTES:-15}
-      AUTH_SESSION_COOKIE_SECURE: "false"
+      AUTH_SESSION_COOKIE_SECURE: ${AUTH_SESSION_COOKIE_SECURE:-false}
+      SERVER_FORWARD_HEADERS_STRATEGY: ${SERVER_FORWARD_HEADERS_STRATEGY:-native}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-*}
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
       POSTGRES_DB: ${POSTGRES_DB:-soarer_alert}
@@ -141,7 +147,7 @@ services:
     volumes:
       - soarer-alert-demo-app-uploads:/app/uploads
     ports:
-      - "${APP_PORT:-9900}:9900"
+      - "${APP_BIND:-127.0.0.1}:${APP_PORT:-9900}:9900"
     depends_on:
       postgres:
         condition: service_healthy

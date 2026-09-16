@@ -1,14 +1,15 @@
 # SoarerAlert 演示部署手册
 
-面向"低带宽轻量服务器 + Mock 数据"的演示场景。服务器上只需要安装 Docker，
-不需要安装 JDK、Maven、Node.js 或任何数据库。
+面向"低带宽轻量服务器 + Mock 数据"的演示场景。服务器上只需要安装 Docker；
+如需域名 HTTPS 访问，再额外安装 Nginx 和 certbot。不需要安装 JDK、Maven、
+Node.js 或任何数据库。
 
 **演示模式特性：**
 
 - Prometheus 告警和腾讯云 CLS 日志全部使用 Mock 数据
 - 不需要任何腾讯云子账号、SecretKey 或日志主题
 - AI 对话和 RAG 仍然调用真实的阿里云百炼模型（需要 `DASHSCOPE_API_KEY`）
-- 基础设施端口只绑定 `127.0.0.1`，公网只暴露应用端口 `9900`
+- 所有宿主机端口默认只绑定 `127.0.0.1`，公网访问建议通过 Nginx 反代到应用
 - 应用镜像由本地预构建的 jar 生成，服务器上不执行 Maven，避免低带宽下载依赖
 
 ---
@@ -44,7 +45,8 @@ sudo systemctl restart docker
 | 端口 | 用途 |
 |---|---|
 | 22 | SSH |
-| 9900 | SoarerAlert 演示访问 |
+| 80 | Nginx HTTP 入口（可重定向到 HTTPS） |
+| 443 | Nginx HTTPS 入口 |
 
 **不要**放行 15432、16379、19000、19001、19090——演示 Compose 已把它们绑定到
 `127.0.0.1`，即使误放行，公网也访问不到。
@@ -82,13 +84,20 @@ cd /opt
 unzip soarer-alert-demo.zip
 cd soarer-alert-demo
 
-# 只在当前 shell 注入，不要写入任何文件
-export DASHSCOPE_API_KEY="sk-你的百炼密钥"
-export AUTH_ADMIN_USERNAME="admin"
-export AUTH_ADMIN_INITIAL_PASSWORD="Demo-Boot-123456"
+# 建议写入 .env，并执行 chmod 600 .env
+cat > .env <<'EOF'
+DASHSCOPE_API_KEY=sk-你的百炼密钥
+AUTH_ADMIN_USERNAME=admin
+AUTH_ADMIN_INITIAL_PASSWORD=Demo-Boot-123456
+APP_BIND=127.0.0.1
+AUTH_SESSION_COOKIE_SECURE=true
+SERVER_FORWARD_HEADERS_STRATEGY=framework
+CORS_ALLOWED_ORIGINS=https://你的域名
+EOF
+chmod 600 .env
 
 # 首次会拉取基础镜像（约 300MB，3M 带宽约 15-20 分钟），之后构建秒级完成
-docker compose -f docker-compose.demo.yml up -d --build --wait
+docker compose --env-file .env -f docker-compose.demo.yml up -d --build --wait
 ```
 
 `--wait` 会等所有容器健康检查通过。首次启动时应用需要执行 Flyway 建表，
@@ -108,10 +117,10 @@ curl http://127.0.0.1:9900/actuator/health
 docker logs -f soarer-alert-app
 ```
 
-浏览器访问：
+如果已按上文配置 Nginx，浏览器访问：
 
 ```
-http://<服务器IP>:9900
+https://你的域名
 ```
 
 使用 `AUTH_ADMIN_USERNAME` / `AUTH_ADMIN_INITIAL_PASSWORD` 登录。
@@ -172,13 +181,13 @@ docker compose -f docker-compose.demo.yml up -d --build --wait
 |---|---|
 | `docker pull` 超时 | 按第一章配置镜像加速器后 `systemctl restart docker` |
 | 应用一直 restarting | `docker logs soarer-alert-app`，最常见是 `DASHSCOPE_API_KEY` 未设置或无效 |
-| 页面打不开 | 确认云防火墙已放行 9900；`curl http://127.0.0.1:9900/actuator/health` 在服务器上先验证 |
+| 页面打不开 | 确认云防火墙已放行 80/443；先在服务器上执行 `curl http://127.0.0.1:9900/actuator/health` 和 `curl -k https://127.0.0.1/actuator/health` |
 | 4G 内存吃紧 | 演示 Compose 已限制各容器内存（app 1.5G、其余合计约 1.4G）；建议服务器加 2G swap |
 | 想重新演示首次登录 | `docker compose -f docker-compose.demo.yml down -v` 后重新启动 |
 
 ## 九、安全提醒
 
-- `DASHSCOPE_API_KEY` 只放在当前 shell（`export`），不要写进 zip、Compose 或文档
+- `DASHSCOPE_API_KEY` 只放在权限为 `600` 的 `.env` 中，不要写进 zip、Compose 或文档
 - 演示结束不用时，执行 `docker compose -f docker-compose.demo.yml down` 停止，
   避免百炼 API 被意外调用产生费用
-- 演示站是 HTTP 明文传输，不要在里面放真实密钥或敏感运维文档
+- 未配置 HTTPS 时，演示站是 HTTP 明文传输，不要在里面放真实密钥或敏感运维文档

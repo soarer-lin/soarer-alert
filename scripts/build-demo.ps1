@@ -38,7 +38,7 @@ if (-not $SkipPackage) {
 Write-Host "==> [2/4] compile container healthcheck" -ForegroundColor Cyan
 $healthcheckOut = Join-Path $projectRoot "target\healthcheck"
 New-Item -ItemType Directory -Force -Path $healthcheckOut | Out-Null
-& javac -d $healthcheckOut (Join-Path $projectRoot "docker\HealthCheck.java")
+& javac -encoding UTF-8 -d $healthcheckOut (Join-Path $projectRoot "docker\HealthCheck.java")
 if ($LASTEXITCODE -ne 0) { throw "javac failed with exit code $LASTEXITCODE." }
 
 $jarPath = Join-Path $projectRoot "target\soarer-alert-service-1.0-SNAPSHOT.jar"
