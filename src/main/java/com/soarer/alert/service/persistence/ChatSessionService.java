@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.time.ZoneId;
 
 @Service
 public class ChatSessionService {
@@ -178,6 +179,7 @@ public class ChatSessionService {
 
         messageRepository.deleteAfterSequence(normalizedSessionId, assistantSequence);
         target.setContent(answer == null ? "" : answer);
+        target.setCreatedAt(java.time.LocalDateTime.now());
         messageRepository.save(target);
         sessionRepository.findById(normalizedSessionId).ifPresent(session -> {
             session.setUpdatedAt(java.time.LocalDateTime.now());
@@ -281,6 +283,15 @@ public class ChatSessionService {
         Map<String, String> historyMessage = new LinkedHashMap<>();
         historyMessage.put("role", message.getRole());
         historyMessage.put("content", message.getContent());
+        if (message.getCreatedAt() != null) {
+            historyMessage.put(
+                    "createdAt",
+                    String.valueOf(message.getCreatedAt()
+                            .atZone(ZoneId.systemDefault())
+                            .toInstant()
+                            .toEpochMilli())
+            );
+        }
         return historyMessage;
     }
 

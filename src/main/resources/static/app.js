@@ -680,7 +680,7 @@ class SoarerAlertAgentApp {
                 sequence: Number.isFinite(Number(message.sequence))
                     ? Number(message.sequence)
                     : index,
-                timestamp: null
+                timestamp: message.createdAt || null
             }));
 
             this.sessionId = historyId;
@@ -691,7 +691,15 @@ class SoarerAlertAgentApp {
             if (this.chatMessages) {
                 this.chatMessages.innerHTML = '';
                 messages.forEach(message => {
-                    this.addMessage(message.type, message.content, false, false, message.sequence);
+                    this.addMessage(
+                        message.type,
+                        message.content,
+                        false,
+                        false,
+                        message.sequence,
+                        true,
+                        message.timestamp
+                    );
                 });
             }
 
@@ -905,7 +913,7 @@ class SoarerAlertAgentApp {
         return 'session_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
     }
 
-    persistAssistantMessage(sessionId, content, sequence = null) {
+    persistAssistantMessage(sessionId, content, sequence = null, timestamp = new Date().toISOString()) {
         if (!content) {
             return;
         }
@@ -917,7 +925,7 @@ class SoarerAlertAgentApp {
                 sequence: Number.isFinite(Number(sequence))
                     ? Number(sequence)
                     : this.currentChatHistory.length,
-                timestamp: new Date().toISOString()
+                timestamp: timestamp
             });
         }
 
@@ -925,13 +933,14 @@ class SoarerAlertAgentApp {
     }
 
     appendAssistantMessageToSession(sessionId, content) {
+        const timestamp = new Date().toISOString();
         if (this.sessionId === sessionId) {
             const sequence = this.currentChatHistory.length;
-            this.addMessage('assistant', content, false, false, sequence);
-            this.persistAssistantMessage(sessionId, content, sequence);
+            this.addMessage('assistant', content, false, false, sequence, true, timestamp);
+            this.persistAssistantMessage(sessionId, content, sequence, timestamp);
             return;
         }
-        this.persistAssistantMessage(sessionId, content);
+        this.persistAssistantMessage(sessionId, content, null, timestamp);
     }
 
     renderStreamingMessage(messageElement, content, sessionId) {
@@ -1234,7 +1243,15 @@ class SoarerAlertAgentApp {
     }
 
     // 添加消息到聊天界面
-    addMessage(type, content, isStreaming = false, saveToHistory = true, sequence = null, showAssistantActions = true) {
+    addMessage(
+        type,
+        content,
+        isStreaming = false,
+        saveToHistory = true,
+        sequence = null,
+        showAssistantActions = true,
+        timestamp = null
+    ) {
         // 检查是否是第一条消息，如果是则移除居中样式
         const isFirstMessage = this.chatMessages && this.chatMessages.querySelectorAll('.message').length === 0;
         const messageSequence = Number.isFinite(Number(sequence))
@@ -1242,18 +1259,22 @@ class SoarerAlertAgentApp {
             : this.currentChatHistory.length;
         
         // 保存消息到当前对话历史（如果不是流式消息且需要保存）
+        const messageTimestamp = timestamp || new Date().toISOString();
+
         if (!isStreaming && saveToHistory && content) {
             this.currentChatHistory.push({
                 type: type,
                 content: content,
                 sequence: messageSequence,
-                timestamp: new Date().toISOString()
+                timestamp: messageTimestamp
             });
         }
         
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${type}${isStreaming ? ' streaming' : ''}`;
         messageDiv.dataset.sequence = String(messageSequence);
+        messageDiv.__messageContent = content;
+        messageDiv.__messageTimestamp = messageTimestamp;
 
         // 创建消息内容包装器
         const messageContentWrapper = document.createElement('div');
@@ -1278,6 +1299,9 @@ class SoarerAlertAgentApp {
         messageDiv.appendChild(messageContentWrapper);
         if (type === 'assistant' && !isStreaming && showAssistantActions) {
             this.addAssistantActions(messageDiv, content);
+        }
+        if (type === 'user') {
+            this.addUserActions(messageDiv, content);
         }
 
         if (this.chatMessages) {
@@ -1320,7 +1344,6 @@ class SoarerAlertAgentApp {
             return;
         }
 
-        messageElement.__assistantContent = content;
         const wrapper = messageElement.querySelector('.message-content-wrapper');
         if (!wrapper) {
             return;
@@ -1342,12 +1365,45 @@ class SoarerAlertAgentApp {
                     title="重新生成" aria-label="重新生成">
                 <i data-lucide="refresh-cw" aria-hidden="true"></i>
             </button>
+            <span class="message-action-time"></span>
         `;
 
+        actions.querySelector('.message-action-time')
+            .textContent = this.formatMessageTime(messageElement.__messageTimestamp);
         actions.querySelector('.copy-message-btn')
-            .addEventListener('click', () => this.copyAssistantMessage(messageElement));
+            .addEventListener('click', () => this.copyMessage(messageElement));
         actions.querySelector('.regenerate-message-btn')
             .addEventListener('click', () => this.regenerateAssistantMessage(messageElement));
+
+        wrapper.appendChild(actions);
+        this.renderLucideIcons();
+    }
+
+    addUserActions(messageElement, content) {
+        const wrapper = messageElement.querySelector('.message-content-wrapper');
+        if (!wrapper) {
+            return;
+        }
+
+        const existingActions = wrapper.querySelector('.message-actions');
+        if (existingActions) {
+            existingActions.remove();
+        }
+
+        const actions = document.createElement('div');
+        actions.className = 'message-actions user-message-actions';
+        actions.innerHTML = `
+            <span class="message-action-time"></span>
+            <button class="message-action-btn copy-message-btn" type="button"
+                    title="复制" aria-label="复制">
+                <i data-lucide="copy" aria-hidden="true"></i>
+            </button>
+        `;
+
+        actions.querySelector('.message-action-time')
+            .textContent = this.formatMessageTime(messageElement.__messageTimestamp);
+        actions.querySelector('.copy-message-btn')
+            .addEventListener('click', () => this.copyMessage(messageElement));
 
         wrapper.appendChild(actions);
         this.renderLucideIcons();
@@ -1379,9 +1435,9 @@ class SoarerAlertAgentApp {
         }, 1800);
     }
 
-    async copyAssistantMessage(messageElement) {
-        const content = messageElement && messageElement.__assistantContent
-            ? messageElement.__assistantContent
+    async copyMessage(messageElement) {
+        const content = messageElement && messageElement.__messageContent
+            ? messageElement.__messageContent
             : '';
         if (!content) {
             return;
@@ -1406,6 +1462,55 @@ class SoarerAlertAgentApp {
                 this.showNotification('复制失败，请手动选择文本', 'error');
             }
         }
+    }
+
+    parseMessageTimestamp(value) {
+        if (!value) {
+            return null;
+        }
+        if (value instanceof Date) {
+            return Number.isNaN(value.getTime()) ? null : value;
+        }
+
+        const numericValue = Number(value);
+        if (Number.isFinite(numericValue) && numericValue > 0) {
+            return new Date(numericValue);
+        }
+
+        const date = new Date(value);
+        return Number.isNaN(date.getTime()) ? null : date;
+    }
+
+    formatMessageTime(value) {
+        const messageDate = this.parseMessageTimestamp(value);
+        if (!messageDate) {
+            return '';
+        }
+
+        const now = new Date();
+        const time = `${String(messageDate.getHours()).padStart(2, '0')}:${String(messageDate.getMinutes()).padStart(2, '0')}`;
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const startOfYesterday = new Date(startOfToday);
+        startOfYesterday.setDate(startOfYesterday.getDate() - 1);
+
+        if (messageDate >= startOfToday) {
+            return `今天 ${time}`;
+        }
+        if (messageDate >= startOfYesterday) {
+            return `昨天 ${time}`;
+        }
+
+        const startOfWeek = new Date(startOfToday);
+        startOfWeek.setDate(startOfWeek.getDate() - ((startOfWeek.getDay() + 6) % 7));
+        if (messageDate >= startOfWeek) {
+            const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+            return `${weekdays[messageDate.getDay()]} ${time}`;
+        }
+
+        if (messageDate.getFullYear() === now.getFullYear()) {
+            return `${messageDate.getMonth() + 1}月${messageDate.getDate()}日 ${time}`;
+        }
+        return `${messageDate.getFullYear()}年${messageDate.getMonth() + 1}月${messageDate.getDate()}日 ${time}`;
     }
 
     copyTextWithFallback(content) {
@@ -1493,6 +1598,13 @@ class SoarerAlertAgentApp {
         this.currentChatHistory = historySnapshot;
         if (this.chatMessages) {
             this.chatMessages.innerHTML = messagesSnapshot;
+            this.chatMessages.querySelectorAll('.message.user').forEach(message => {
+                const sequence = Number(message.dataset.sequence);
+                const historyMessage = this.currentChatHistory.find(item =>
+                    item.type === 'user' && Number(item.sequence) === sequence
+                );
+                this.addUserActions(message, historyMessage ? historyMessage.content : '');
+            });
             this.chatMessages.querySelectorAll('.message.assistant:not(.aiops-message)').forEach(message => {
                 const sequence = Number(message.dataset.sequence);
                 const historyMessage = this.currentChatHistory.find(item =>
@@ -1598,6 +1710,7 @@ class SoarerAlertAgentApp {
     handleStreamComplete(assistantMessageElement, fullResponse, requestSessionId) {
         let messageElement = assistantMessageElement;
         const isActiveSession = this.sessionId === requestSessionId;
+        const completedAt = new Date().toISOString();
 
         if (isActiveSession) {
             if (!messageElement || !messageElement.isConnected) {
@@ -1605,6 +1718,7 @@ class SoarerAlertAgentApp {
                 messageElement.dataset.sessionId = requestSessionId;
             }
             messageElement.classList.remove('streaming', 'thinking', 'chat-thinking', 'session-busy-placeholder');
+            messageElement.__messageTimestamp = completedAt;
             const messageContent = messageElement.querySelector('.message-content');
             if (messageContent) {
                 messageContent.className = 'message-content';
@@ -1622,7 +1736,8 @@ class SoarerAlertAgentApp {
         this.persistAssistantMessage(
             requestSessionId,
             fullResponse,
-            messageElement ? Number(messageElement.dataset.sequence) : null
+            messageElement ? Number(messageElement.dataset.sequence) : null,
+            completedAt
         );
     }
 

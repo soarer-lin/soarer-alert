@@ -770,6 +770,31 @@ html[data-pointer-active="true"] .main-content::before {
     margin-top: 10px;
 }
 
+.message-action-time {
+    font-size: 0.75rem;
+    line-height: 30px;
+    color: rgba(139, 163, 157, 0.78);
+    padding: 0 6px;
+    white-space: nowrap;
+}
+
+.message.user .message-actions {
+    margin-top: 4px;
+    min-height: 30px;
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(-2px);
+    transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.message.user .message-content:hover + .message-actions,
+.message.user .message-actions:hover,
+.message.user .message-actions:focus-within {
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
+}
+
 .message-action-btn {
     width: 30px;
     height: 30px;

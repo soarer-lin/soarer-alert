@@ -11,6 +11,7 @@ import org.mockito.InOrder;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -106,6 +107,26 @@ class ChatSessionServiceTest {
     }
 
     @Test
+    void getHistoryIncludesMessageCreatedAt() {
+        when(sessionRepository.existsById("session-1")).thenReturn(true);
+        OpsChatMessage message = message("session-1", "user", 0);
+        LocalDateTime createdAt = LocalDateTime.of(2026, 9, 16, 18, 30);
+        message.setCreatedAt(createdAt);
+        when(messageRepository.findBySessionIdOrderBySequenceAsc("session-1")).thenReturn(List.of(message));
+
+        List<java.util.Map<String, String>> history = service.getHistory("session-1");
+
+        assertThat(history)
+                .singleElement()
+                .extracting(item -> item.get("createdAt"), item -> item.get("role"), item -> item.get("content"))
+                .containsExactly(
+                        String.valueOf(createdAt.atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()),
+                        "user",
+                        "user-0"
+                );
+    }
+
+    @Test
     void getRecentHistoryUsesOnlyTheLatestTwelveMessages() {
         UUID userId = UUID.randomUUID();
         OpsChatSession session = session("session-1");
@@ -148,6 +169,7 @@ class ChatSessionServiceTest {
         assertThat(messageCaptor.getValue().getSequence()).isEqualTo(1);
         assertThat(messageCaptor.getValue().getRole()).isEqualTo("assistant");
         assertThat(messageCaptor.getValue().getContent()).isEqualTo("new-answer");
+        assertThat(messageCaptor.getValue().getCreatedAt()).isNotNull();
         verify(sessionRepository).save(session);
     }
 
