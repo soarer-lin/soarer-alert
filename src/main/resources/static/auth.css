@@ -121,7 +121,7 @@ select {
     margin-bottom: 16px;
 }
 
-.auth-field span {
+.auth-field > span {
     display: block;
     margin-bottom: 7px;
     color: var(--text-soft);
@@ -160,6 +160,9 @@ select {
 
 .auth-password {
     position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: center;
 }
 
 .auth-password input {
@@ -174,9 +177,10 @@ select {
 
 .auth-icon-button {
     position: absolute;
-    top: 50%;
+    top: 0;
+    bottom: 0;
     right: 5px;
-    transform: translateY(-50%);
+    margin: auto 0;
     display: grid;
     place-items: center;
     width: 30px;
@@ -196,11 +200,16 @@ select {
 }
 
 .auth-icon {
-    display: grid;
-    place-items: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    line-height: 0;
 }
 
 .auth-icon svg {
+    display: block;
     width: 17px;
     height: 17px;
 }
