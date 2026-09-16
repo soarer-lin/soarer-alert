@@ -1344,6 +1344,8 @@ class SoarerAlertAgentApp {
             return;
         }
 
+        messageElement.__messageContent = content;
+
         const wrapper = messageElement.querySelector('.message-content-wrapper');
         if (!wrapper) {
             return;
@@ -1380,6 +1382,8 @@ class SoarerAlertAgentApp {
     }
 
     addUserActions(messageElement, content) {
+        messageElement.__messageContent = content;
+
         const wrapper = messageElement.querySelector('.message-content-wrapper');
         if (!wrapper) {
             return;
