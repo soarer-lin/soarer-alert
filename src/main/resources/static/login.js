@@ -14,25 +14,6 @@
         }
     }
 
-    function bindPasswordToggles() {
-        document.querySelectorAll('[data-password-toggle]').forEach(toggle => {
-            const input = document.querySelector(toggle.dataset.passwordToggle);
-            const showIcon = toggle.querySelector('[data-icon-show]');
-            const hideIcon = toggle.querySelector('[data-icon-hide]');
-            if (!input || !showIcon || !hideIcon) {
-                return;
-            }
-            toggle.addEventListener('click', () => {
-                const visible = input.type === 'text';
-                input.type = visible ? 'password' : 'text';
-                toggle.setAttribute('aria-pressed', String(!visible));
-                toggle.setAttribute('aria-label', visible ? '显示密码' : '隐藏密码');
-                showIcon.classList.toggle('hidden', !visible);
-                hideIcon.classList.toggle('hidden', visible);
-            });
-        });
-    }
-
     function showError(message) {
         errorBox.textContent = message;
         errorBox.classList.remove('hidden');
@@ -62,6 +43,8 @@
             if (data && data.enabled) {
                 usernameInput.value = data.username;
                 passwordInput.value = data.password;
+                // 程序赋值不会触发 input 事件，这里手动通知密码可见性按钮刷新。
+                passwordInput.dispatchEvent(new Event('input', {bubbles: true}));
                 loginModeHint.textContent = '目前为测试账号，可能存在多人同时使用！';
             } else {
                 loginModeHint.textContent = '还没有账号？请联系管理员获取账号';
@@ -105,7 +88,6 @@
         }
     });
 
-    bindPasswordToggles();
     loadDemoCredentials();
     refreshIcons();
 })();

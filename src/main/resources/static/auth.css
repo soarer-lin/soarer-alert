@@ -166,6 +166,12 @@ select {
     padding-right: 42px;
 }
 
+/* 隐藏 Edge/Chrome 原生密码小眼睛，避免和自定义按钮同时出现。 */
+.auth-password input::-ms-reveal,
+.auth-password input::-ms-clear {
+    display: none;
+}
+
 .auth-icon-button {
     position: absolute;
     top: 50%;

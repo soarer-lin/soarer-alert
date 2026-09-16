@@ -70,6 +70,13 @@ class SecurityConfigEnabledTest {
     }
 
     @Test
+    void allowsPasswordVisibilityScriptWithoutLogin() throws Exception {
+        // 登录页需要匿名加载该脚本，否则密码小眼睛逻辑会被重定向拦截。
+        mockMvc.perform(get("/password-visibility.js"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
     void rejectsAdminPageWithoutAdminRole() throws Exception {
         mockMvc.perform(get("/admin.html").with(SecurityMockMvcRequestPostProcessors.user("ops").roles("OPS")))
                 .andExpect(status().isForbidden());

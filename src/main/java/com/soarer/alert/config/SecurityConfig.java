@@ -43,6 +43,7 @@ public class SecurityConfig {
                                     "/api/auth/logout",
                                     "/login.html",
                                     "/login.js",
+                                    "/password-visibility.js",
                                     "/auth.css",
                                     "/theme.css",
                                     "/theme.js",
