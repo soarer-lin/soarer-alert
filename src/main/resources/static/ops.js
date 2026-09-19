@@ -19,6 +19,7 @@
     let socket = null;
     let polling = false;
     let toastTimer = null;
+    const mobileMenuButton = document.getElementById('opsMobileMenuButton');
 
     function refreshIcons() {
         if (window.lucide && typeof window.lucide.createIcons === 'function') {
@@ -271,6 +272,7 @@
 
     function setView(view) {
         state.view = view;
+        closeMobileNav();
         document.querySelectorAll('.ops-nav-button').forEach(button => {
             button.classList.toggle('active', button.dataset.view === view);
         });
@@ -713,6 +715,43 @@
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#39;');
     }
+
+    function toggleMobileNav() {
+        if (!mobileMenuButton) {
+            return;
+        }
+        const open = !document.body.classList.contains('ops-nav-open');
+        document.body.classList.toggle('ops-nav-open', open);
+        mobileMenuButton.setAttribute('aria-expanded', String(open));
+        mobileMenuButton.setAttribute('aria-label', open ? '关闭工作台导航' : '打开工作台导航');
+    }
+
+    function closeMobileNav() {
+        if (!mobileMenuButton) {
+            return;
+        }
+        document.body.classList.remove('ops-nav-open');
+        mobileMenuButton.setAttribute('aria-expanded', 'false');
+        mobileMenuButton.setAttribute('aria-label', '打开工作台导航');
+    }
+
+    if (mobileMenuButton) {
+        mobileMenuButton.addEventListener('click', toggleMobileNav);
+    }
+
+    document.addEventListener('click', event => {
+        if (!document.body.classList.contains('ops-nav-open')
+            || event.target.closest('#opsMobileMenuButton, .ops-nav')) {
+            return;
+        }
+        closeMobileNav();
+    });
+
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+            closeMobileNav();
+        }
+    });
 
     document.querySelectorAll('.ops-nav-button').forEach(button => {
         button.addEventListener('click', () => setView(button.dataset.view));

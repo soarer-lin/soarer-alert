@@ -10,10 +10,15 @@
     <link rel="manifest" href="/site.webmanifest">
     <link rel="stylesheet" href="ops.css?v=20260915-2">
     <link rel="stylesheet" href="theme.css?v=20260914-2">
+    <link rel="stylesheet" href="mobile.css?v=20260919-1">
     <script src="https://cdn.jsdelivr.net/npm/lucide@0.462.0/dist/umd/lucide.min.js"></script>
 </head>
 <body class="ops-page">
 <header class="ops-header">
+    <button class="ops-mobile-menu-button" id="opsMobileMenuButton" type="button"
+            aria-label="打开工作台导航" aria-expanded="false">
+        <i data-lucide="menu" aria-hidden="true"></i>
+    </button>
     <div class="ops-brand">
         <a href="/" title="返回聊天界面">
             <i data-lucide="message-square-text"></i>
@@ -219,6 +224,6 @@
 <script src="/vendor/marked.min.js?v=20260914-3"></script>
 <script src="/vendor/purify.min.js?v=20260914-3"></script>
 <script src="auth.js"></script>
-<script src="ops.js?v=20260915-2"></script>
+<script src="ops.js?v=20260919-1"></script>
 </body>
 </html>

@@ -1,0 +1,610 @@
+/*
+ * 移动端响应式覆盖层。
+ * 桌面端样式保持原有结构，手机端只在这里调整布局、触摸区域和滚动方式。
+ */
+
+:root {
+    --mobile-gutter: 12px;
+    --mobile-touch-size: 44px;
+}
+
+html,
+body {
+    overscroll-behavior-x: none;
+}
+
+.mobile-sidebar-toggle,
+.mobile-sidebar-backdrop,
+.ops-mobile-menu-button {
+    display: none;
+}
+
+@media (max-width: 720px) {
+    html,
+    body {
+        min-width: 0;
+    }
+
+    button,
+    a,
+    input,
+    select {
+        touch-action: manipulation;
+    }
+
+    /* 聊天页：侧边栏改为抽屉，避免挤压聊天内容。 */
+    .mobile-sidebar-toggle {
+        position: fixed;
+        top: max(10px, env(safe-area-inset-top));
+        left: max(10px, env(safe-area-inset-left));
+        z-index: 2100;
+        display: grid;
+        place-items: center;
+        width: var(--mobile-touch-size);
+        height: var(--mobile-touch-size);
+        padding: 0;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(10, 15, 19, 0.86);
+        color: var(--text-soft);
+        cursor: pointer;
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+        backdrop-filter: blur(16px);
+    }
+
+    .mobile-sidebar-toggle svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .mobile-sidebar-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 1900;
+        display: block;
+        background: rgba(2, 4, 5, 0.46);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.22s ease;
+    }
+
+    .sidebar {
+        position: fixed;
+        inset: 0 auto 0 0;
+        z-index: 2000;
+        width: min(86vw, 310px);
+        max-width: 310px;
+        transform: translateX(-105%);
+        transition: transform 0.24s var(--ease-out);
+        box-shadow: 18px 0 50px rgba(0, 0, 0, 0.24);
+    }
+
+    body.mobile-sidebar-open {
+        overflow: hidden;
+    }
+
+    body.mobile-sidebar-open .sidebar {
+        transform: translateX(0);
+    }
+
+    body.mobile-sidebar-open .mobile-sidebar-backdrop {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .main-content {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .ai-ops-top-btn {
+        top: max(10px, env(safe-area-inset-top));
+        right: max(10px, env(safe-area-inset-right));
+        min-height: var(--mobile-touch-size);
+        padding: 8px 12px;
+    }
+
+    .chat-messages {
+        min-width: 0;
+        padding: 64px var(--mobile-gutter) 18px;
+    }
+
+    .chat-container.centered .chat-messages,
+    .chat-container.centered .chat-input-container {
+        max-width: none;
+    }
+
+    .welcome-greeting {
+        padding: 12px 8px;
+        font-size: 1.28rem;
+        line-height: 1.45;
+    }
+
+    .welcome-message {
+        padding: 34px 12px;
+        font-size: 1.2rem;
+    }
+
+    .message {
+        margin-bottom: 18px;
+    }
+
+    .message.user .message-content-wrapper {
+        max-width: 90%;
+    }
+
+    .message-content {
+        padding: 11px 13px;
+        font-size: 0.92rem;
+        line-height: 1.62;
+    }
+
+    .message.assistant .message-avatar {
+        width: 28px;
+        height: 28px;
+    }
+
+    .message.assistant .message-avatar svg {
+        width: 15px;
+        height: 15px;
+    }
+
+    .message-content pre {
+        max-width: 100%;
+        padding: 11px;
+        font-size: 0.84rem;
+    }
+
+    .message-content table {
+        display: block;
+        overflow-x: auto;
+        min-width: 520px;
+    }
+
+    .message-actions {
+        min-height: var(--mobile-touch-size);
+        gap: 2px;
+    }
+
+    .message-action-btn {
+        width: var(--mobile-touch-size);
+        height: var(--mobile-touch-size);
+    }
+
+    /* 手机没有 hover，用户消息操作保持可点击。 */
+    .message.user .message-actions {
+        visibility: visible;
+        opacity: 1;
+        transform: none;
+    }
+
+    .message-action-time {
+        line-height: var(--mobile-touch-size);
+        padding: 0 5px;
+    }
+
+    .chat-input-container {
+        padding: 8px var(--mobile-gutter) max(10px, env(safe-area-inset-bottom));
+    }
+
+    .input-wrapper {
+        padding: 10px 12px;
+    }
+
+    .message-input {
+        min-height: 30px;
+        font-size: 16px;
+    }
+
+    .input-bottom-bar {
+        min-height: var(--mobile-touch-size);
+        margin-top: 6px;
+        padding-top: 6px;
+    }
+
+    .tools-btn,
+    .file-btn,
+    .send-btn-circle {
+        width: var(--mobile-touch-size);
+        height: var(--mobile-touch-size);
+    }
+
+    .mode-selector-btn {
+        min-height: var(--mobile-touch-size);
+    }
+
+    .tools-menu,
+    .mode-dropdown {
+        max-width: calc(100vw - 24px);
+    }
+
+    .tools-menu {
+        left: 0;
+    }
+
+    .mode-dropdown {
+        right: 0;
+        min-width: min(220px, calc(100vw - 24px));
+    }
+
+    .notification {
+        top: max(12px, env(safe-area-inset-top));
+        right: 12px;
+        left: 12px;
+        max-width: none;
+    }
+
+    .confirm-dialog-overlay {
+        align-items: flex-end;
+        padding: 0;
+    }
+
+    .confirm-dialog {
+        width: 100%;
+        border-radius: 12px 12px 0 0;
+        padding: 22px 18px max(22px, env(safe-area-inset-bottom));
+    }
+
+    .confirm-dialog-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .confirm-dialog-cancel,
+    .confirm-dialog-confirm {
+        min-height: var(--mobile-touch-size);
+    }
+
+    .loading-content {
+        width: min(88vw, 360px);
+        padding: 30px 22px;
+    }
+
+    /* 运维工作台：导航改成下拉面板，顶部保留连接状态和刷新按钮。 */
+    .ops-header {
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        min-height: 58px;
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
+        padding: 8px var(--mobile-gutter);
+    }
+
+    .ops-mobile-menu-button {
+        display: inline-grid;
+        place-items: center;
+        flex: 0 0 auto;
+        width: var(--mobile-touch-size);
+        height: var(--mobile-touch-size);
+        padding: 0;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.035);
+        color: var(--text-soft);
+        cursor: pointer;
+    }
+
+    .ops-mobile-menu-button svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .ops-brand {
+        min-width: 0;
+        flex: 1 1 auto;
+    }
+
+    .ops-brand a {
+        min-height: var(--mobile-touch-size);
+        max-width: 100%;
+        font-size: 15px;
+    }
+
+    .ops-brand a span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .ops-nav {
+        position: fixed;
+        top: 58px;
+        right: 10px;
+        left: 10px;
+        z-index: 1100;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 4px;
+        padding: 8px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(8, 12, 15, 0.97);
+        box-shadow: var(--shadow-float);
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(-8px);
+        transition: opacity 0.2s ease, transform 0.2s ease;
+        backdrop-filter: blur(18px);
+    }
+
+    body.ops-nav-open .ops-nav {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(0);
+    }
+
+    .ops-nav-button {
+        justify-content: flex-start;
+        min-height: var(--mobile-touch-size);
+        padding: 0 14px;
+    }
+
+    .ops-header-actions {
+        flex: 0 0 auto;
+        gap: 5px;
+    }
+
+    .ops-user-chip {
+        display: none;
+    }
+
+    .connection-pill {
+        min-width: 0;
+        min-height: var(--mobile-touch-size);
+        padding: 0 8px;
+    }
+
+    .ops-header-actions .ops-button {
+        width: var(--mobile-touch-size);
+        height: var(--mobile-touch-size);
+        min-height: var(--mobile-touch-size);
+        padding: 0;
+    }
+
+    .ops-header-actions .ops-button span {
+        display: none;
+    }
+
+    .ops-main {
+        padding: 10px;
+    }
+
+    .metrics-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+
+    .metric-tile {
+        min-height: 72px;
+        padding: 11px;
+    }
+
+    .metric-tile span {
+        margin-bottom: 6px;
+        font-size: 12px;
+    }
+
+    .metric-tile strong {
+        font-size: 22px;
+    }
+
+    .panel-header {
+        min-height: 54px;
+        padding: 11px 12px;
+    }
+
+    .panel-header p {
+        white-space: normal;
+    }
+
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .table-container table {
+        min-width: 620px;
+    }
+
+    .new-run-form {
+        grid-template-columns: 1fr;
+        padding: 10px 12px;
+    }
+
+    .new-run-form input,
+    .new-run-form .ops-button {
+        min-height: var(--mobile-touch-size);
+    }
+
+    .runs-panel {
+        max-height: none;
+    }
+
+    .runs-table {
+        max-height: 38vh;
+    }
+
+    .detail-panel {
+        min-height: 0;
+    }
+
+    .detail-actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .detail-actions .ops-button {
+        min-height: var(--mobile-touch-size);
+    }
+
+    .detail-tabs {
+        padding: 0 6px;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .detail-tabs button {
+        min-height: var(--mobile-touch-size);
+        padding: 0 12px;
+    }
+
+    .detail-content {
+        min-height: 220px;
+        padding: 12px;
+    }
+
+    .definition-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .timeline-item {
+        grid-template-columns: 26px minmax(0, 1fr);
+        gap: 8px;
+    }
+
+    .timeline-item.timeline-tool {
+        margin-left: 8px;
+    }
+
+    .timeline-title {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .timeline-meta {
+        white-space: normal;
+    }
+
+    .toast {
+        right: 12px;
+        bottom: max(12px, env(safe-area-inset-bottom));
+        left: 12px;
+        max-width: none;
+    }
+
+    /* 账户和管理页：表单单列，宽表格允许手指横向滚动。 */
+    body.auth-page {
+        align-items: flex-start;
+        overflow: auto;
+        padding: max(12px, env(safe-area-inset-top)) var(--mobile-gutter) max(18px, env(safe-area-inset-bottom));
+    }
+
+    .auth-shell {
+        margin: auto 0;
+    }
+
+    .auth-card,
+    .auth-panel,
+    .auth-page-header {
+        padding: 18px 14px;
+    }
+
+    .auth-brand-title {
+        font-size: 24px;
+    }
+
+    .auth-page-header-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: 100%;
+        gap: 7px;
+    }
+
+    .auth-page-header-actions > * {
+        min-width: 0;
+    }
+
+    .auth-page-header-actions .auth-user-chip {
+        grid-column: 1 / -1;
+        justify-content: space-between;
+    }
+
+    .auth-button {
+        min-height: var(--mobile-touch-size);
+        padding: 0 10px;
+    }
+
+    .auth-form-grid,
+    #passwordForm {
+        grid-template-columns: 1fr;
+    }
+
+    .auth-form-grid .auth-button.primary {
+        width: 100%;
+    }
+
+    .auth-section-title {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .auth-section-title .auth-page-header-actions {
+        grid-template-columns: 1fr auto 1fr;
+    }
+
+    .auth-table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .auth-table {
+        min-width: 640px;
+    }
+
+    .auth-table-wrap.user-table-wrap .auth-table {
+        min-width: 900px;
+    }
+
+    .auth-table-wrap.user-table-wrap .auth-toolbar.compact {
+        flex-wrap: wrap;
+    }
+
+    .auth-modal-backdrop {
+        align-items: flex-end;
+        padding: 0;
+    }
+
+    .auth-modal {
+        width: 100%;
+        max-height: 90dvh;
+        overflow-y: auto;
+        border-radius: 12px 12px 0 0;
+        padding: 20px 16px max(20px, env(safe-area-inset-bottom));
+    }
+}
+
+@media (max-width: 380px) {
+    .ai-ops-top-btn span,
+    .ops-brand a span {
+        display: none;
+    }
+
+    .ai-ops-top-btn {
+        width: var(--mobile-touch-size);
+        padding: 0;
+        justify-content: center;
+    }
+
+    .metrics-grid {
+        gap: 6px;
+    }
+
+    .metric-tile {
+        padding: 9px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sidebar,
+    .mobile-sidebar-backdrop,
+    .ops-nav {
+        transition: none;
+    }
+}

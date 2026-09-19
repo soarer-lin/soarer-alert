@@ -354,6 +354,8 @@ class SoarerAlertAgentApp {
     initializeElements() {
         // 侧边栏元素
         this.sidebar = document.querySelector('.sidebar');
+        this.mobileSidebarToggle = document.getElementById('mobileSidebarToggle');
+        this.mobileSidebarBackdrop = document.getElementById('mobileSidebarBackdrop');
         this.newChatBtn = document.getElementById('newChatBtn');
         this.aiOpsSidebarBtn = document.getElementById('aiOpsSidebarBtn');
         
@@ -381,14 +383,42 @@ class SoarerAlertAgentApp {
 
     // 绑定事件监听器
     bindEvents() {
+        if (this.mobileSidebarToggle) {
+            this.mobileSidebarToggle.addEventListener('click', () => this.toggleMobileSidebar());
+        }
+
+        if (this.mobileSidebarBackdrop) {
+            this.mobileSidebarBackdrop.addEventListener('click', () => this.closeMobileSidebar());
+        }
+
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape') {
+                this.closeMobileSidebar();
+            }
+        });
+
         // 新建对话
         if (this.newChatBtn) {
-            this.newChatBtn.addEventListener('click', () => this.newChat());
+            this.newChatBtn.addEventListener('click', () => {
+                this.closeMobileSidebar();
+                this.newChat();
+            });
         }
         
         // AI Ops按钮
         if (this.aiOpsSidebarBtn) {
-            this.aiOpsSidebarBtn.addEventListener('click', () => this.triggerAIOps());
+            this.aiOpsSidebarBtn.addEventListener('click', () => {
+                this.closeMobileSidebar();
+                this.triggerAIOps();
+            });
+        }
+
+        if (this.sidebar) {
+            this.sidebar.addEventListener('click', event => {
+                if (event.target.closest('a, .history-item')) {
+                    this.closeMobileSidebar();
+                }
+            });
         }
         
         // 模式选择下拉菜单
@@ -461,6 +491,25 @@ class SoarerAlertAgentApp {
         if (this.fileInput) {
             this.fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
         }
+    }
+
+    toggleMobileSidebar() {
+        if (!this.sidebar || !this.mobileSidebarToggle) {
+            return;
+        }
+        const open = !document.body.classList.contains('mobile-sidebar-open');
+        document.body.classList.toggle('mobile-sidebar-open', open);
+        this.mobileSidebarToggle.setAttribute('aria-expanded', String(open));
+        this.mobileSidebarToggle.setAttribute('aria-label', open ? '关闭导航菜单' : '打开导航菜单');
+    }
+
+    closeMobileSidebar() {
+        if (!this.mobileSidebarToggle) {
+            return;
+        }
+        document.body.classList.remove('mobile-sidebar-open');
+        this.mobileSidebarToggle.setAttribute('aria-expanded', 'false');
+        this.mobileSidebarToggle.setAttribute('aria-label', '打开导航菜单');
     }
 
     // 切换工具菜单显示/隐藏
