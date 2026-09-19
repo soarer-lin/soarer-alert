@@ -45,6 +45,7 @@ public class SecurityConfig {
                                     "/login.js",
                                     "/password-visibility.js",
                                     "/auth.css",
+                                    "/mobile.css",
                                     "/theme.css",
                                     "/theme.js",
                                     "/favicon.ico",
